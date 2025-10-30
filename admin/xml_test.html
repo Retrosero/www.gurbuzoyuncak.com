@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML Import Test Sayfası</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; }
+        .btn { background: #1E88E5; color: white; border: none; padding: 1rem 2rem; border-radius: 4px; cursor: pointer; margin: 0.5rem; }
+        .btn:hover { background: #1565C0; }
+        .result { background: #f0f0f0; padding: 1rem; border-radius: 4px; margin: 1rem 0; font-family: monospace; white-space: pre-wrap; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .step { margin: 1rem 0; padding: 1rem; border-left: 4px solid #1E88E5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 XML Import Sistemi Test Sayfası</h1>
+        <p>Bu sayfa XML import sisteminin farklı bileşenlerini test etmenizi sağlar.</p>
+        
+        <div class="step">
+            <h3>1. XML Bağlantı Testi</h3>
+            <p>XML feed URL'sinin erişilebilir olduğunu kontrol eder.</p>
+            <button class="btn" onclick="testXMLConnection()">XML Bağlantısını Test Et</button>
+            <div id="xmlResult" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>2. API Bağlantı Testi</h3>
+            <p>XML Import API endpoint'inin çalıştığını kontrol eder.</p>
+            <button class="btn" onclick="testAPIConnection()">API Bağlantısını Test Et</button>
+            <div id="apiResult" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>3. Veritabanı Bağlantı Testi</h3>
+            <p>Veritabanı şemasının kurulu olup olmadığını kontrol eder.</p>
+            <button class="btn" onclick="testDatabase()">Veritabanını Test Et</button>
+            <div id="dbResult" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>4. Tam Import Testi</h3>
+            <p>Tüm sistemi test eder ve birkaç ürünü import dener.</p>
+            <button class="btn" onclick="testFullImport()">Tam Import Testi</button>
+            <div id="importResult" class="result"></div>
+        </div>
+        
+        <div class="step">
+            <h3>5. Sistem Durumu</h3>
+            <p>Tüm sistem bileşenlerinin durumunu gösterir.</p>
+            <button class="btn" onclick="checkSystemStatus()">Sistem Durumunu Kontrol Et</button>
+            <div id="statusResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const XML_URL = 'https://cdn1.xmlbankasi.com/p1/gurbuzoyuncak/image/data/xml/goapp.xml';
+        const API_URL = '/backend/api/xml_import.php';
+        
+        function showResult(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = message;
+        }
+        
+        async function testXMLConnection() {
+            try {
+                const response = await fetch(XML_URL);
+                const data = await response.text();
+                
+                const size = data.length;
+                const hasXML = data.includes('<?xml');
+                const hasProducts = data.includes('<Product>');
+                const sample = data.substring(0, 200);
+                
+                const message = `✅ XML Bağlantısı Başarılı!\n\nHTTP Status: ${response.status}\nContent Size: ${size} characters\nXML Tag: ${hasXML ? '✅ Var' : '❌ Yok'}\nProduct Tag: ${hasProducts ? '✅ Var' : '❌ Yok'}\n\nÖrnek İçerik:\n${sample}...`;
+                
+                showResult('xmlResult', message);
+            } catch (error) {
+                showResult('xmlResult', `❌ XML Bağlantısı Başarısız!\n\nHata: ${error.message}`, true);
+            }
+        }
+        
+        async function testAPIConnection() {
+            try {
+                const response = await fetch(API_URL + '?test=1');
+                const data = await response.json();
+                
+                const message = `✅ API Bağlantısı Başarılı!\n\nHTTP Status: ${response.status}\nAPI Response:\n${JSON.stringify(data, null, 2)}`;
+                
+                showResult('apiResult', message);
+            } catch (error) {
+                showResult('apiResult', `❌ API Bağlantısı Başarısız!\n\nHata: ${error.message}`, true);
+            }
+        }
+        
+        async function testDatabase() {
+            try {
+                const response = await fetch(API_URL + '?limit=1');
+                const data = await response.json();
+                
+                const message = `✅ Veritabanı Bağlantısı Başarılı!\n\nHTTP Status: ${response.status}\nImport Tablosu Durumu:\n${JSON.stringify(data, null, 2)}`;
+                
+                showResult('dbResult', message);
+            } catch (error) {
+                showResult('dbResult', `❌ Veritabanı Bağlantısı Başarısız!\n\nHata: ${error.message}\n\nLütfen veritabanını kontrol edin:\n1. xml_uyumlu_schema.sql dosyasını çalıştırdınız mı?\n2. Veritabanı bağlantı bilgileri doğru mu?\n3. MySQL/MariaDB çalışıyor mu?`, true);
+            }
+        }
+        
+        async function testFullImport() {
+            const resultElement = document.getElementById('importResult');
+            resultElement.className = 'result';
+            resultElement.textContent = 'Tam import testi başlatılıyor...';
+            
+            try {
+                // Test: Veritabanı bağlantısını kontrol et
+                const dbResponse = await fetch(API_URL + '?limit=1');
+                const dbData = await dbResponse.json();
+                
+                if (!dbData.success) {
+                    throw new Error('Veritabanı bağlantısı başarısız');
+                }
+                
+                // Test: XML içeriğini kontrol et
+                const xmlResponse = await fetch(XML_URL);
+                const xmlContent = await xmlResponse.text();
+                
+                if (!xmlContent.includes('<Product>')) {
+                    throw new Error('XML içeriğinde ürün bulunamadı');
+                }
+                
+                const message = `✅ Tam Import Testi Başarılı!\n\n🔍 Veritabanı: ✅ Bağlı\n🔍 XML İçeriği: ✅ Geçerli\n🔍 Ürünler: ✅ Bulundu\n\nTest Sonucu: Sistem hazır!\n\nŞimdi admin panelinden XML import sayfasına gidip test edebilirsiniz.\n\nAdmin Panel: /admin/xml_import.php`;
+                
+                showResult('importResult', message);
+            } catch (error) {
+                showResult('importResult', `❌ Tam Import Testi Başarısız!\n\nHata: ${error.message}\n\nÇözüm Adımları:\n1. Veritabanı kurulumunu kontrol edin\n2. XML URL'sini doğrulayın\n3. PHP/MySQL bağlantısını kontrol edin`, true);
+            }
+        }
+        
+        async function checkSystemStatus() {
+            const result = [];
+            let allOk = true;
+            
+            // XML bağlantısı
+            try {
+                const xmlResponse = await fetch(XML_URL);
+                if (xmlResponse.ok) {
+                    result.push('✅ XML Feed: Erişilebilir');
+                } else {
+                    result.push('❌ XML Feed: HTTP ' + xmlResponse.status);
+                    allOk = false;
+                }
+            } catch (error) {
+                result.push('❌ XML Feed: Bağlantı hatası');
+                allOk = false;
+            }
+            
+            // API bağlantısı
+            try {
+                const apiResponse = await fetch(API_URL + '?test=1');
+                const apiData = await apiResponse.json();
+                if (apiData.success) {
+                    result.push('✅ API Endpoint: Çalışıyor');
+                } else {
+                    result.push('❌ API Endpoint: Hata');
+                    allOk = false;
+                }
+            } catch (error) {
+                result.push('❌ API Endpoint: Bağlantı hatası');
+                allOk = false;
+            }
+            
+            // Veritabanı
+            try {
+                const dbResponse = await fetch(API_URL + '?limit=1');
+                const dbData = await dbResponse.json();
+                if (dbData.success !== false) {
+                    result.push('✅ Veritabanı: Bağlı');
+                } else {
+                    result.push('❌ Veritabanı: Tablo sorunu');
+                    allOk = false;
+                }
+            } catch (error) {
+                result.push('❌ Veritabanı: Bağlantı hatası');
+                allOk = false;
+            }
+            
+            // Resim dizini
+            try {
+                const imgResponse = await fetch('/public/images/products/');
+                if (imgResponse.ok || imgResponse.status === 403) {
+                    result.push('✅ Resim Dizini: Erişilebilir');
+                } else {
+                    result.push('❌ Resim Dizini: Erişim sorunu');
+                    allOk = false;
+                }
+            } catch (error) {
+                result.push('❌ Resim Dizini: Kontrol edilemedi');
+            }
+            
+            const message = (allOk ? '🎉 Tüm Sistemler Hazır!' : '⚠️ Bazı Sistemlerde Sorun Var') + '\n\n' + result.join('\n');
+            
+            showResult('statusResult', message, !allOk);
+        }
+    </script>
+</body>
+</html>

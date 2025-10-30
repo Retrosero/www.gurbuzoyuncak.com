@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ürün detayları - Gürbüz Oyuncak">
+    <title>Ürün Detayı | Gürbüz Oyuncak</title>
+    
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .breadcrumb {
+            padding: 1rem 0;
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+        
+        .breadcrumb a {
+            color: var(--iznik-mavisi);
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            padding: 2rem 0;
+        }
+        
+        .product-gallery {
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+        
+        .main-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: var(--radius-lg);
+            border: 1px solid #E5E7EB;
+            margin-bottom: 1rem;
+        }
+        
+        .thumbnail-images {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .thumbnail-images img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .thumbnail-images img:hover,
+        .thumbnail-images img.active {
+            border-color: var(--iznik-mavisi);
+        }
+        
+        .product-info h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-meta {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .rating svg {
+            width: 16px;
+            height: 16px;
+            fill: #F59E0B;
+        }
+        
+        .price-section {
+            background-color: var(--krem);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 2rem;
+        }
+        
+        .price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--iznik-mavisi);
+            margin-bottom: 0.5rem;
+        }
+        
+        .old-price {
+            font-size: 1.25rem;
+            text-decoration: line-through;
+            color: #9CA3AF;
+            margin-left: 1rem;
+        }
+        
+        .discount-badge {
+            display: inline-block;
+            background-color: var(--kizil);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+        
+        .stock-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .stock-status.in-stock {
+            color: var(--zeytin);
+        }
+        
+        .stock-status.out-of-stock {
+            color: var(--kizil);
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .quantity-selector label {
+            font-weight: 600;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            border: 1px solid #D1D5DB;
+            border-radius: var(--radius-sm);
+        }
+        
+        .quantity-controls button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--koyu-notr);
+        }
+        
+        .quantity-controls button:hover {
+            background-color: #F3F4F6;
+        }
+        
+        .quantity-controls input {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            border: none;
+            border-left: 1px solid #D1D5DB;
+            border-right: 1px solid #D1D5DB;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            padding: 1rem;
+            font-size: 1.125rem;
+        }
+        
+        .product-features {
+            background-color: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 2rem;
+        }
+        
+        .product-features h3 {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--zeytin);
+            font-weight: 700;
+        }
+        
+        .product-tabs {
+            margin-top: 3rem;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 2px solid #E5E7EB;
+            margin-bottom: 2rem;
+        }
+        
+        .tab-buttons button {
+            padding: 1rem 2rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6B7280;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+        }
+        
+        .tab-buttons button.active {
+            color: var(--iznik-mavisi);
+            border-bottom-color: var(--iznik-mavisi);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .review-item {
+            padding: 1.5rem;
+            background-color: #F9FAFB;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1rem;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .reviewer-name {
+            font-weight: 600;
+        }
+        
+        .review-date {
+            font-size: 0.875rem;
+            color: #6B7280;
+        }
+        
+        .related-products {
+            margin-top: 4rem;
+        }
+        
+        .related-products h2 {
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .product-detail {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .product-gallery {
+                position: static;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .tab-buttons {
+                overflow-x: auto;
+            }
+            
+            .tab-buttons button {
+                white-space: nowrap;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header (same as index.html) -->
+    <header class="header">
+        <div class="header-top">
+            <div class="container">
+                <div>500 TL ve üzeri siparişlerde ücretsiz kargo!</div>
+                <div>
+                    <a href="tel:02424000000" style="color: white;">0242 XXX XX XX</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header-main">
+            <div class="container">
+                <a href="index.html" class="logo">Gürbüz Oyuncak</a>
+                
+                <div class="search-bar">
+                    <form id="search-form">
+                        <input type="text" id="search-input" placeholder="Oyuncak ara..." />
+                        <button type="submit">Ara</button>
+                    </form>
+                </div>
+                
+                <div class="header-actions">
+                    <a href="account.html" class="header-action">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span>Hesabım</span>
+                    </a>
+                    
+                    <a href="cart.html" class="header-action">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span>Sepetim</span>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="nav">
+            <div class="container">
+                <a href="index.html" class="nav-link">Ana Sayfa</a>
+                <a href="products.html" class="nav-link">Tüm Ürünler</a>
+                <a href="products.html?category=bebekler-aksesuarlari" class="nav-link">Bebekler</a>
+                <a href="products.html?category=puzzle-yapboz" class="nav-link">Puzzle & Yapboz</a>
+                <a href="products.html?category=kumandalilar" class="nav-link">Kumandalılar</a>
+                <a href="products.html?category=araclar" class="nav-link">Araçlar</a>
+                <a href="about.html" class="nav-link">Hakkımızda</a>
+                <a href="contact.html" class="nav-link">İletişim</a>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="index.html">Ana Sayfa</a> / 
+                <a href="products.html" id="breadcrumb-category">Ürünler</a> / 
+                <span id="breadcrumb-product">Ürün</span>
+            </nav>
+            
+            <!-- Product Detail -->
+            <div class="product-detail">
+                <!-- Gallery -->
+                <div class="product-gallery">
+                    <img id="main-image" class="main-image" src="https://via.placeholder.com/600" alt="Ürün görseli">
+                    <div class="thumbnail-images" id="thumbnail-images">
+                        <img src="https://via.placeholder.com/150" alt="Görsel 1" class="active" onclick="changeMainImage(this)">
+                        <img src="https://via.placeholder.com/150" alt="Görsel 2" onclick="changeMainImage(this)">
+                        <img src="https://via.placeholder.com/150" alt="Görsel 3" onclick="changeMainImage(this)">
+                        <img src="https://via.placeholder.com/150" alt="Görsel 4" onclick="changeMainImage(this)">
+                    </div>
+                </div>
+                
+                <!-- Product Info -->
+                <div class="product-info">
+                    <h1 id="product-name">Yükleniyor...</h1>
+                    
+                    <div class="product-meta">
+                        <div class="rating">
+                            <svg viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            <svg viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            <svg viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            <svg viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            <svg viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            <span style="margin-left: 0.5rem; color: #6B7280;">(4.5) - 24 değerlendirme</span>
+                        </div>
+                        <span style="color: #6B7280;">SKU: <span id="product-sku">-</span></span>
+                    </div>
+                    
+                    <div class="price-section">
+                        <div>
+                            <span class="price" id="product-price">₺0,00</span>
+                            <span class="old-price" id="product-old-price"></span>
+                            <span class="discount-badge" id="discount-badge" style="display: none;">%20 İndirim</span>
+                        </div>
+                        <div class="stock-status in-stock" id="stock-status">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Stokta var
+                        </div>
+                    </div>
+                    
+                    <div class="quantity-selector">
+                        <label>Miktar:</label>
+                        <div class="quantity-controls">
+                            <button type="button" onclick="decreaseQuantity()">−</button>
+                            <input type="number" id="quantity" value="1" min="1" max="10" readonly>
+                            <button type="button" onclick="increaseQuantity()">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="addToCart()">Sepete Ekle</button>
+                        <button class="btn btn-outline" onclick="addToWishlist()">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                            Favorilere Ekle
+                        </button>
+                    </div>
+                    
+                    <div class="product-features">
+                        <h3>Ürün Özellikleri</h3>
+                        <ul class="feature-list" id="product-features">
+                            <li>Yüksek kaliteli malzeme</li>
+                            <li>CE sertifikalı ve güvenli</li>
+                            <li>Kolay temizlenir</li>
+                            <li>Yaşa uygun tasarım</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="trust-badges" style="display: flex; gap: 2rem; padding: 1.5rem; background-color: #F9FAFB; border-radius: var(--radius-lg);">
+                        <div style="text-align: center; flex: 1;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚚</div>
+                            <div style="font-weight: 600; font-size: 0.875rem;">Ücretsiz Kargo</div>
+                            <div style="color: #6B7280; font-size: 0.75rem;">500 TL üzeri</div>
+                        </div>
+                        <div style="text-align: center; flex: 1;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">↩️</div>
+                            <div style="font-weight: 600; font-size: 0.875rem;">Kolay İade</div>
+                            <div style="color: #6B7280; font-size: 0.75rem;">14 gün içinde</div>
+                        </div>
+                        <div style="text-align: center; flex: 1;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
+                            <div style="font-weight: 600; font-size: 0.875rem;">Güvenli Ödeme</div>
+                            <div style="color: #6B7280; font-size: 0.75rem;">SSL korumalı</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Tabs -->
+            <div class="product-tabs">
+                <div class="tab-buttons">
+                    <button class="active" onclick="openTab(event, 'description')">Açıklama</button>
+                    <button onclick="openTab(event, 'specifications')">Özellikler</button>
+                    <button onclick="openTab(event, 'reviews')">Değerlendirmeler (24)</button>
+                    <button onclick="openTab(event, 'shipping')">Kargo ve İade</button>
+                </div>
+                
+                <div id="description" class="tab-content active">
+                    <p id="product-description">Ürün açıklaması yükleniyor...</p>
+                </div>
+                
+                <div id="specifications" class="tab-content">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #E5E7EB;">
+                            <td style="padding: 1rem; font-weight: 600; width: 30%;">Marka</td>
+                            <td style="padding: 1rem;" id="spec-brand">-</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #E5E7EB;">
+                            <td style="padding: 1rem; font-weight: 600;">Yaş Grubu</td>
+                            <td style="padding: 1rem;" id="spec-age">-</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #E5E7EB;">
+                            <td style="padding: 1rem; font-weight: 600;">Malzeme</td>
+                            <td style="padding: 1rem;">Plastik</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #E5E7EB;">
+                            <td style="padding: 1rem; font-weight: 600;">Boyutlar</td>
+                            <td style="padding: 1rem;">25 x 15 x 10 cm</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 1rem; font-weight: 600;">Sertifikalar</td>
+                            <td style="padding: 1rem;">CE, TSE</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div id="reviews" class="tab-content">
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div>
+                                <div class="reviewer-name">Ayşe Y.</div>
+                                <div class="rating" style="margin-top: 0.25rem;">
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                </div>
+                            </div>
+                            <div class="review-date">15 Ekim 2025</div>
+                        </div>
+                        <p>Çocuğum çok sevdi, kaliteli bir ürün. Hızlı kargo için teşekkürler!</p>
+                    </div>
+                    
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div>
+                                <div class="reviewer-name">Mehmet K.</div>
+                                <div class="rating" style="margin-top: 0.25rem;">
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                </div>
+                            </div>
+                            <div class="review-date">10 Ekim 2025</div>
+                        </div>
+                        <p>Fiyat performans ürünü, tavsiye ederim.</p>
+                    </div>
+                </div>
+                
+                <div id="shipping" class="tab-content">
+                    <h3>Kargo Bilgileri</h3>
+                    <p>500 TL ve üzeri siparişlerde kargo ücretsizdir. Diğer siparişlerde kargo ücreti 29.90 TL'dir.</p>
+                    <p>Siparişleriniz 1-3 iş günü içerisinde kargoya verilir.</p>
+                    
+                    <h3 style="margin-top: 2rem;">İade Koşulları</h3>
+                    <p>Ürünü teslim aldıktan sonra 14 gün içerisinde iade edebilirsiniz.</p>
+                    <p>İade edilecek ürünler kullanılmamış, ambalajı açılmamış ve hasarsız olmalıdır.</p>
+                </div>
+            </div>
+            
+            <!-- Related Products -->
+            <section class="related-products">
+                <h2>Benzer Ürünler</h2>
+                <div class="product-grid" id="related-products">
+                    <!-- Benzer ürünler JavaScript ile yüklenecek -->
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Footer (same structure) -->
+    <footer class="footer" style="background-color: var(--koyu-notr); color: white; padding: 3rem 0 1rem;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <h4 style="color: var(--iznik-mavisi); margin-bottom: 1rem;">Gürbüz Oyuncak</h4>
+                    <p style="color: #D1D5DB; font-size: 0.875rem;">1989'dan beri Türkiye'nin en güvenilir oyuncak markası</p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Kurumsal</h4>
+                    <ul style="list-style: none; font-size: 0.875rem;">
+                        <li style="margin-bottom: 0.5rem;"><a href="about.html" style="color: #D1D5DB;">Hakkımızda</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="contact.html" style="color: #D1D5DB;">İletişim</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: #D1D5DB;">Kvkk</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Müşteri Hizmetleri</h4>
+                    <ul style="list-style: none; font-size: 0.875rem;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: #D1D5DB;">Sipariş Takibi</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: #D1D5DB;">İptal/İade</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: #D1D5DB;">SSS</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">İletişim</h4>
+                    <p style="color: #D1D5DB; font-size: 0.875rem;">Tel: 0242 XXX XX XX</p>
+                    <p style="color: #D1D5DB; font-size: 0.875rem;">E-posta: info@gurbuzoyuncak.com</p>
+                </div>
+            </div>
+            <div style="border-top: 1px solid #374151; padding-top: 1rem; text-align: center; color: #9CA3AF; font-size: 0.875rem;">
+                © 2025 Gürbüz Oyuncak. Tüm hakları saklıdır.
+            </div>
+        </div>
+    </footer>
+    
+    <script src="js/main.js"></script>
+    <script>
+        // URL'den ürün ID'sini al
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id');
+        
+        // Sayfa yüklendiğinde ürünü getir
+        document.addEventListener('DOMContentLoaded', function() {
+            if (productId) {
+                loadProductDetail(productId);
+            } else {
+                alert('Ürün bulunamadı');
+                window.location.href = 'products.html';
+            }
+            
+            // Sepet sayısını güncelle
+            updateCartCount();
+        });
+        
+        // Ürün detaylarını yükle
+        async function loadProductDetail(id) {
+            try {
+                const response = await fetch(`../backend/api/urunler.php/${id}`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const product = data.data;
+                    displayProduct(product);
+                } else {
+                    alert('Ürün bulunamadı');
+                    window.location.href = 'products.html';
+                }
+            } catch (error) {
+                console.error('Ürün yüklenirken hata:', error);
+                alert('Ürün yüklenirken bir hata oluştu');
+            }
+        }
+        
+        // Ürünü görüntüle
+        function displayProduct(product) {
+            document.getElementById('product-name').textContent = product.urun_adi;
+            document.getElementById('product-sku').textContent = product.urun_kodu;
+            document.getElementById('product-description').textContent = product.aciklama || 'Ürün açıklaması mevcut değil.';
+            document.getElementById('product-price').textContent = `₺${parseFloat(product.fiyat).toFixed(2)}`;
+            
+            // İndirim varsa göster
+            if (product.kampanya_fiyati && product.kampanya_fiyati < product.fiyat) {
+                document.getElementById('product-old-price').textContent = `₺${parseFloat(product.fiyat).toFixed(2)}`;
+                document.getElementById('product-price').textContent = `₺${parseFloat(product.kampanya_fiyati).toFixed(2)}`;
+                const discount = Math.round((1 - product.kampanya_fiyati / product.fiyat) * 100);
+                document.getElementById('discount-badge').textContent = `%${discount} İndirim`;
+                document.getElementById('discount-badge').style.display = 'inline-block';
+            }
+            
+            // Stok durumu
+            const stockStatus = document.getElementById('stock-status');
+            if (product.stok_miktari > 0) {
+                stockStatus.className = 'stock-status in-stock';
+                stockStatus.innerHTML = `
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Stokta var (${product.stok_miktari} adet)
+                `;
+            } else {
+                stockStatus.className = 'stock-status out-of-stock';
+                stockStatus.innerHTML = 'Stokta yok';
+            }
+            
+            // Görseller
+            if (product.ana_gorsel) {
+                document.getElementById('main-image').src = product.ana_gorsel;
+                document.querySelector('.thumbnail-images img').src = product.ana_gorsel;
+            }
+            
+            // Breadcrumb
+            if (product.kategori_adi) {
+                document.getElementById('breadcrumb-category').textContent = product.kategori_adi;
+            }
+            document.getElementById('breadcrumb-product').textContent = product.urun_adi;
+            
+            // Özellikler
+            document.getElementById('spec-brand').textContent = product.brand_name || '-';
+            document.getElementById('spec-age').textContent = product.age_group_name || '-';
+        }
+        
+        // Görsel değiştir
+        function changeMainImage(thumb) {
+            document.getElementById('main-image').src = thumb.src;
+            document.querySelectorAll('.thumbnail-images img').forEach(img => img.classList.remove('active'));
+            thumb.classList.add('active');
+        }
+        
+        // Miktar artır/azalt
+        function increaseQuantity() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) < parseInt(input.max)) {
+                input.value = parseInt(input.value) + 1;
+            }
+        }
+        
+        function decreaseQuantity() {
+            const input = document.getElementById('quantity');
+            if (parseInt(input.value) > parseInt(input.min)) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+        
+        // Sepete ekle
+        function addToCart() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const productName = document.getElementById('product-name').textContent;
+            const priceText = document.getElementById('product-price').textContent;
+            const price = parseFloat(priceText.replace('₺', '').replace(',', ''));
+            const imageUrl = document.getElementById('main-image').src;
+            
+            const product = {
+                id: productId,
+                name: productName,
+                price: price,
+                quantity: quantity,
+                image: imageUrl
+            };
+            
+            if (typeof Cart !== 'undefined') {
+                Cart.addItem(product);
+                alert('Ürün sepete eklendi!');
+                updateCartCount();
+            } else {
+                alert('Sepet sistemi yüklenemedi');
+            }
+        }
+        
+        // Favorilere ekle
+        function addToWishlist() {
+            alert('Ürün favorilere eklendi!');
+        }
+        
+        // Tab değiştir
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            const tabButtons = document.querySelectorAll('.tab-buttons button');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+        
+        // Sepet sayısını güncelle
+        function updateCartCount() {
+            if (typeof Cart !== 'undefined') {
+                document.getElementById('cart-count').textContent = Cart.getItemCount();
+            }
+        }
+    </script>
+</body>
+</html>
