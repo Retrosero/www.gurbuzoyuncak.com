@@ -24,12 +24,78 @@ class Campaign {
     public $is_active;
     public $priority;
     
+    // Yeni timed discount sistem özellikleri
+    public $product_ids;
+    public $min_purchase_amount;
+    public $max_discount_amount;
+    
     public function __construct($db) {
         $this->conn = $db;
     }
     
     /**
-     * Aktif kampanyaları getir
+     * Aktif timed discount kampanyalarını getir (ürün kartları için)
+     */
+    public function getActiveTimedDiscounts($product_id = null) {
+        $now = date('Y-m-d H:i:s');
+        
+        $query = "SELECT c.* FROM " . $this->table_name . " c
+                  WHERE c.is_active = 1
+                  AND c.campaign_type = 'timed_discount'
+                  AND c.start_date <= :now
+                  AND c.end_date >= :now";
+        
+        if ($product_id) {
+            $query .= " AND (c.product_ids IS NULL OR JSON_CONTAINS(c.product_ids, :product_id))";
+        }
+        
+        $query .= " ORDER BY c.priority DESC, c.discount_value DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':now', $now);
+        
+        if ($product_id) {
+            $product_id_json = json_encode((int)$product_id);
+            $stmt->bindParam(':product_id', $product_id_json);
+        }
+        
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Belirli ürün için geçerli timed discount kampanyasını getir
+     */
+    public function getProductTimedDiscount($product_id) {
+        $campaigns = $this->getActiveTimedDiscounts($product_id);
+        return !empty($campaigns) ? $campaigns[0] : null;
+    }
+    
+    /**
+     * Countdown banner için aktif kampanyaları getir
+     */
+    public function getCountdownBannerCampaigns() {
+        $now = date('Y-m-d H:i:s');
+        
+        $query = "SELECT c.*, 
+                  TIMESTAMPDIFF(SECOND, :now, c.end_date) as seconds_remaining
+                  FROM " . $this->table_name . " c
+                  WHERE c.is_active = 1
+                  AND c.campaign_type = 'timed_discount'
+                  AND c.start_date <= :now
+                  AND c.end_date >= :now
+                  AND TIMESTAMPDIFF(SECOND, :now, c.end_date) > 0
+                  ORDER BY c.priority DESC, c.end_date ASC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':now', $now);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Aktif kampanyaları getir (eski method - uyumluluk için)
      */
     public function getActiveCampaigns($customer_type = 'all') {
         $now = date('Y-m-d H:i:s');
@@ -122,6 +188,9 @@ class Campaign {
         
         // Kampanya tipine göre doğrulama
         switch ($campaign['campaign_type']) {
+            case 'timed_discount':
+                return $this->validateTimedDiscountCampaign($campaign, $cart_total, $cart_items);
+                
             case 'customer_based':
                 return $this->validateCustomerBasedCampaign($campaign, $cart_total, $cart_items);
                 
@@ -155,6 +224,37 @@ class Campaign {
         // Minimum tutar kontrolü
         if ($campaign['min_cart_amount'] && $cart_total < $campaign['min_cart_amount']) {
             return ['valid' => false, 'error' => 'Minimum sepet tutarı yetersiz'];
+        }
+        
+        $discount = $this->calculateDiscount($campaign, $cart_total);
+        return ['valid' => true, 'discount' => $discount];
+    }
+    
+    /**
+     * Timed discount kampanya doğrulama
+     */
+    private function validateTimedDiscountCampaign($campaign, $cart_total, $cart_items) {
+        // Minimum tutar kontrolü (min_purchase_amount)
+        $min_amount = $campaign['min_purchase_amount'] ?? $campaign['min_cart_amount'];
+        if ($min_amount && $cart_total < $min_amount) {
+            return ['valid' => false, 'error' => "Minimum {$min_amount} TL alışveriş tutarı gerekli"];
+        }
+        
+        // Ürün kontrolü (JSON product_ids)
+        if (!empty($campaign['product_ids'])) {
+            $product_ids = json_decode($campaign['product_ids'], true);
+            if (is_array($product_ids)) {
+                $has_applicable_product = false;
+                foreach ($cart_items as $item) {
+                    if (in_array($item['product_id'], $product_ids)) {
+                        $has_applicable_product = true;
+                        break;
+                    }
+                }
+                if (!$has_applicable_product) {
+                    return ['valid' => false, 'error' => 'Kampanya için uygun ürün sepetinizde yok'];
+                }
+            }
         }
         
         $discount = $this->calculateDiscount($campaign, $cart_total);
@@ -254,14 +354,23 @@ class Campaign {
     }
     
     /**
-     * İndirim hesaplama
+     * İndirim hesaplama (geliştirilmiş - max_discount_amount desteği ile)
      */
     private function calculateDiscount($campaign, $amount) {
+        $discount = 0;
+        
         if ($campaign['discount_type'] == 'percentage') {
-            return round(($amount * $campaign['discount_value']) / 100, 2);
+            $discount = round(($amount * $campaign['discount_value']) / 100, 2);
+            
+            // Maksimum indirim tutarı kontrolü
+            if (isset($campaign['max_discount_amount']) && $campaign['max_discount_amount'] > 0) {
+                $discount = min($discount, $campaign['max_discount_amount']);
+            }
         } else {
-            return min($campaign['discount_value'], $amount);
+            $discount = min($campaign['discount_value'], $amount);
         }
+        
+        return $discount;
     }
     
     /**
@@ -300,10 +409,21 @@ class Campaign {
     }
     
     /**
-     * Kampanya için uygun ürünleri getir
+     * Kampanya için uygun ürünleri getir (JSON product_ids desteği ile)
      */
     private function getApplicableItems($campaign, $cart_items) {
-        $applicable_products = $this->getApplicableProducts($campaign['id']);
+        // JSON product_ids field'ı kontrolü
+        $applicable_products = [];
+        if (!empty($campaign['product_ids'])) {
+            $product_ids_json = json_decode($campaign['product_ids'], true);
+            if (is_array($product_ids_json)) {
+                $applicable_products = $product_ids_json;
+            }
+        } else {
+            // Eski sistem desteği
+            $applicable_products = $this->getApplicableProducts($campaign['id']);
+        }
+        
         $applicable_categories = $this->getApplicableCategories($campaign['id']);
         
         // Eğer özel ürün/kategori tanımlanmamışsa tüm sepet geçerli
@@ -444,17 +564,19 @@ class Campaign {
     }
     
     /**
-     * Yeni kampanya oluştur
+     * Yeni kampanya oluştur (yeni field'larla)
      */
     public function create() {
         $query = "INSERT INTO " . $this->table_name . "
                   (name, description, campaign_type, customer_type, discount_type, discount_value,
                    min_cart_amount, min_item_count, buy_quantity, pay_quantity,
-                   start_date, end_date, max_usage_per_user, priority, is_active)
+                   start_date, end_date, product_ids, min_purchase_amount, max_discount_amount,
+                   max_usage_per_user, priority, is_active)
                   VALUES 
                   (:name, :description, :campaign_type, :customer_type, :discount_type, :discount_value,
                    :min_cart_amount, :min_item_count, :buy_quantity, :pay_quantity,
-                   :start_date, :end_date, :max_usage_per_user, :priority, :is_active)";
+                   :start_date, :end_date, :product_ids, :min_purchase_amount, :max_discount_amount,
+                   :max_usage_per_user, :priority, :is_active)";
         
         $stmt = $this->conn->prepare($query);
         
@@ -470,6 +592,9 @@ class Campaign {
         $stmt->bindParam(':pay_quantity', $this->pay_quantity);
         $stmt->bindParam(':start_date', $this->start_date);
         $stmt->bindParam(':end_date', $this->end_date);
+        $stmt->bindParam(':product_ids', $this->product_ids);
+        $stmt->bindParam(':min_purchase_amount', $this->min_purchase_amount);
+        $stmt->bindParam(':max_discount_amount', $this->max_discount_amount);
         $stmt->bindParam(':max_usage_per_user', $this->max_usage_per_user);
         $stmt->bindParam(':priority', $this->priority);
         $stmt->bindParam(':is_active', $this->is_active);
@@ -482,7 +607,7 @@ class Campaign {
     }
     
     /**
-     * Kampanya güncelle
+     * Kampanya güncelle (yeni field'larla)
      */
     public function update() {
         $query = "UPDATE " . $this->table_name . "
@@ -498,6 +623,9 @@ class Campaign {
                       pay_quantity = :pay_quantity,
                       start_date = :start_date,
                       end_date = :end_date,
+                      product_ids = :product_ids,
+                      min_purchase_amount = :min_purchase_amount,
+                      max_discount_amount = :max_discount_amount,
                       max_usage_per_user = :max_usage_per_user,
                       priority = :priority,
                       is_active = :is_active
@@ -518,6 +646,9 @@ class Campaign {
         $stmt->bindParam(':pay_quantity', $this->pay_quantity);
         $stmt->bindParam(':start_date', $this->start_date);
         $stmt->bindParam(':end_date', $this->end_date);
+        $stmt->bindParam(':product_ids', $this->product_ids);
+        $stmt->bindParam(':min_purchase_amount', $this->min_purchase_amount);
+        $stmt->bindParam(':max_discount_amount', $this->max_discount_amount);
         $stmt->bindParam(':max_usage_per_user', $this->max_usage_per_user);
         $stmt->bindParam(':priority', $this->priority);
         $stmt->bindParam(':is_active', $this->is_active);

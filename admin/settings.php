@@ -1,594 +1,811 @@
 <?php
-// Basit auth kontrolü (production'da session kullanılmalı)
-// session_start();
-// if (!isset($_SESSION['admin_logged_in'])) {
-//     header('Location: login.php');
-//     exit;
-// }
+require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../components/ComponentLoader.php';
+
+// Admin kontrolü
+if (!isAdminLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Site ayarları yönetimi - Gürbüz Oyuncak Admin Panel">
     <title>Site Ayarları | Gürbüz Oyuncak Admin</title>
+    
+    <!-- Bootstrap 5.3.2 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Component CSS -->
+    <link rel="stylesheet" href="/components/css/components.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary-color: #667eea;
+            --primary-hover: #5a67d8;
+            --sidebar-width: 280px;
+            --topbar-height: 70px;
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8f9fc;
+            overflow-x: hidden;
         }
         
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
+        /* Layout */
+        .admin-wrapper {
+            display: flex;
             min-height: 100vh;
         }
         
-
-        
         .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: calc(var(--topbar-height) + 2rem) 2rem 2rem;
+            transition: margin-left 0.3s ease;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--topbar-height);
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 999;
+            transition: left 0.3s ease;
+        }
+        
+        .top-bar h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        /* Settings Container */
+        .settings-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* Cards */
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card-header-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-bottom: none;
+        }
+        
+        .card-header-custom h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .card-body-custom {
             padding: 2rem;
         }
         
-        .top-bar {
-            background-color: #FFFFFF;
-            padding: 1rem 2rem;
-            margin: -2rem -2rem 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .settings-container {
-            max-width: 800px;
-        }
-        
-        .card {
-            background-color: #FFFFFF;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .card-header h2 {
-            font-size: 1.25rem;
-            color: #1F2937;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
+        /* Form Elements */
+        .form-label {
+            font-weight: 600;
             color: #374151;
-            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
         }
         
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
+        .form-control, .form-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s;
+            font-size: 0.95rem;
         }
         
-        .form-group textarea {
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea.form-control {
             resize: vertical;
             min-height: 100px;
         }
         
-        .form-group small {
-            display: block;
+        .form-text {
+            color: #6b7280;
+            font-size: 0.85rem;
             margin-top: 0.25rem;
-            color: #6B7280;
-            font-size: 0.75rem;
         }
         
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+        /* Toggle Switch */
+        .form-switch {
+            padding-left: 3rem;
+            min-height: 28px;
         }
         
-        .btn {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-weight: 500;
+        .form-switch .form-check-input {
+            width: 48px;
+            height: 28px;
+            margin-left: -3rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            background-color: #d1d5db;
             border: none;
-            text-decoration: none;
-            font-size: 0.875rem;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='white'/%3e%3c/svg%3e");
         }
         
-        .btn-primary {
-            background-color: #1E88E5;
-            color: #FFFFFF;
+        .form-switch .form-check-input:checked {
+            background-color: var(--primary-color);
         }
         
-        .btn-primary:hover {
-            background-color: #1565C0;
+        .form-switch .form-check-label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
         }
         
-        .btn-success {
-            background-color: #2E7D32;
-            color: #FFFFFF;
+        /* Buttons */
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
         }
         
-        .alert {
-            padding: 1rem;
-            border-radius: 0.375rem;
-            margin-bottom: 1rem;
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            color: white;
         }
         
-        .alert-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-            border: 1px solid #6EE7B7;
-        }
-        
-        .alert-error {
-            background-color: #FEE2E2;
-            color: #991B1B;
-            border: 1px solid #FCA5A5;
-        }
-        
+        /* Logo Preview */
         .logo-preview {
             margin-top: 1rem;
-            max-width: 200px;
+            padding: 1rem;
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .logo-preview img {
-            max-width: 100%;
-            border-radius: 0.5rem;
-            border: 1px solid #E5E7EB;
+            max-width: 200px;
+            max-height: 100px;
+            border-radius: 8px;
         }
         
-        .social-input-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
+        .logo-preview.empty {
+            color: #9ca3af;
         }
         
-        .social-input-group input {
-            flex: 1;
+        /* Alert Animations */
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
+        .alert {
+            animation: slideInDown 0.3s ease;
+            border-radius: 8px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
         }
         
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
         }
         
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #D1D5DB;
-            transition: .4s;
-            border-radius: 24px;
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
         }
         
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: calc(var(--topbar-height) + 1rem) 1rem 1rem;
+            }
+            
+            .top-bar {
+                left: 0;
+                padding: 0 1rem;
+            }
+            
+            .top-bar h1 {
+                font-size: 1.25rem;
+            }
+            
+            .card-body-custom {
+                padding: 1.25rem;
+            }
+            
+            .row > div[class*='col-md-6'] {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        /* Loading State */
+        .btn-save.loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        
+        .btn-save.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top-color: transparent;
             border-radius: 50%;
+            animation: spin 0.6s linear infinite;
         }
         
-        input:checked + .toggle-slider {
-            background-color: #2E7D32;
-        }
-        
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="admin-layout">
+    <div class="admin-wrapper">
         <!-- Sidebar -->
-        <?php include 'includes/sidebar.php'; ?>
+        <?php component('sidebar', ['variant' => 'admin']); ?>
         
         <!-- Main Content -->
-        <main class="main-content">
+        <div class="main-content">
+            <!-- Top Bar -->
             <div class="top-bar">
-                <h1>Site Ayarları</h1>
+                <h1>
+                    <i data-lucide="settings" style="width: 32px; height: 32px;"></i>
+                    Site Ayarları
+                </h1>
+                <?php component('navbar', ['variant' => 'admin']); ?>
             </div>
             
+            <!-- Alert Container -->
             <div id="alert-container"></div>
             
             <div class="settings-container">
                 <!-- Genel Ayarlar -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Genel Ayarlar</h2>
+                <div class="settings-card">
+                    <div class="card-header-custom">
+                        <h3>
+                            <i data-lucide="globe" style="width: 24px; height: 24px;"></i>
+                            Genel Ayarlar
+                        </h3>
                     </div>
-                    
-                    <form id="general-settings-form" onsubmit="saveGeneralSettings(event)">
-                        <div class="form-group">
-                            <label>Site Adı *</label>
-                            <input type="text" id="site-name" value="Gürbüz Oyuncak" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Site Sloganı</label>
-                            <input type="text" id="site-tagline" value="Oyuncak Dünyasının Lideri">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Site Açıklaması</label>
-                            <textarea id="site-description">Gürbüz Oyuncak, 1989'dan beri kaliteli oyuncaklar sunan Türkiye'nin önde gelen oyuncak toptancısıdır.</textarea>
-                            <small>Arama motorları için site açıklaması</small>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>E-posta</label>
-                                <input type="email" id="site-email" value="info@gurbuzoyuncak.com">
+                    <div class="card-body-custom">
+                        <form id="general-settings-form">
+                            <div class="mb-3">
+                                <label class="form-label">Site Adı *</label>
+                                <input type="text" class="form-control" id="site-name" required>
                             </div>
                             
-                            <div class="form-group">
-                                <label>Telefon</label>
-                                <input type="tel" id="site-phone" value="+90 242 123 45 67">
+                            <div class="mb-3">
+                                <label class="form-label">Site Sloganı</label>
+                                <input type="text" class="form-control" id="site-tagline">
                             </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Adres</label>
-                            <textarea id="site-address">Güzeloba Mah. Çağlayangil Cad. No:1234 Muratpaşa/Antalya</textarea>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success">
-                            Kaydet
-                        </button>
-                    </form>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Site Açıklaması</label>
+                                <textarea class="form-control" id="site-description"></textarea>
+                                <div class="form-text">Arama motorları için site açıklaması</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">E-posta</label>
+                                    <input type="email" class="form-control" id="site-email">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Telefon</label>
+                                    <input type="tel" class="form-control" id="site-phone">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Adres</label>
+                                <textarea class="form-control" id="site-address" rows="2"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-save">
+                                <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                                Kaydet
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 
-                <!-- Logo Ayarları -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Logo ve Görseller</h2>
+                <!-- Logo ve Görseller -->
+                <div class="settings-card">
+                    <div class="card-header-custom">
+                        <h3>
+                            <i data-lucide="image" style="width: 24px; height: 24px;"></i>
+                            Logo ve Görseller
+                        </h3>
                     </div>
-                    
-                    <form id="logo-settings-form" onsubmit="saveLogoSettings(event)">
-                        <div class="form-group">
-                            <label>Site Logosu</label>
-                            <input type="file" id="site-logo" accept="image/*" onchange="previewLogo(event, 'logo-preview')">
-                            <div id="logo-preview" class="logo-preview"></div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Favicon</label>
-                            <input type="file" id="site-favicon" accept="image/*" onchange="previewLogo(event, 'favicon-preview')">
-                            <div id="favicon-preview" class="logo-preview"></div>
-                            <small>32x32 piksel, ICO veya PNG formatında</small>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success">
-                            Kaydet
-                        </button>
-                    </form>
+                    <div class="card-body-custom">
+                        <form id="logo-settings-form">
+                            <div class="mb-3">
+                                <label class="form-label">Site Logosu</label>
+                                <input type="file" class="form-control" id="site-logo" accept="image/*">
+                                <div id="logo-preview" class="logo-preview empty">
+                                    Logo yüklenecek
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Favicon</label>
+                                <input type="file" class="form-control" id="site-favicon" accept="image/*">
+                                <div id="favicon-preview" class="logo-preview empty">
+                                    Favicon yüklenecek
+                                </div>
+                                <div class="form-text">32x32 piksel, ICO veya PNG formatında</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-save">
+                                <i data-lucide="upload" style="width: 18px; height: 18px;"></i>
+                                Yükle
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 
                 <!-- Sosyal Medya -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Sosyal Medya Hesapları</h2>
+                <div class="settings-card">
+                    <div class="card-header-custom">
+                        <h3>
+                            <i data-lucide="share-2" style="width: 24px; height: 24px;"></i>
+                            Sosyal Medya Hesapları
+                        </h3>
                     </div>
-                    
-                    <form id="social-settings-form" onsubmit="saveSocialSettings(event)">
-                        <div class="form-group">
-                            <label>Facebook</label>
-                            <input type="url" id="social-facebook" placeholder="https://facebook.com/gurbuzoyuncak">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Instagram</label>
-                            <input type="url" id="social-instagram" placeholder="https://instagram.com/gurbuzoyuncak">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Twitter (X)</label>
-                            <input type="url" id="social-twitter" placeholder="https://twitter.com/gurbuzoyuncak">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>YouTube</label>
-                            <input type="url" id="social-youtube" placeholder="https://youtube.com/@gurbuzoyuncak">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>WhatsApp İş Hattı</label>
-                            <input type="tel" id="social-whatsapp" placeholder="+90 555 123 45 67">
-                            <small>Müşterilerin doğrudan WhatsApp üzerinden iletişim kurabilmesi için</small>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success">
-                            Kaydet
-                        </button>
-                    </form>
+                    <div class="card-body-custom">
+                        <form id="social-settings-form">
+                            <div class="mb-3">
+                                <label class="form-label">Facebook</label>
+                                <input type="url" class="form-control" id="social-facebook" placeholder="https://facebook.com/gurbuzoyuncak">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Instagram</label>
+                                <input type="url" class="form-control" id="social-instagram" placeholder="https://instagram.com/gurbuzoyuncak">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Twitter (X)</label>
+                                <input type="url" class="form-control" id="social-twitter" placeholder="https://twitter.com/gurbuzoyuncak">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">YouTube</label>
+                                <input type="url" class="form-control" id="social-youtube" placeholder="https://youtube.com/@gurbuzoyuncak">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">WhatsApp İş Hattı</label>
+                                <input type="tel" class="form-control" id="social-whatsapp" placeholder="+90 555 123 45 67">
+                                <div class="form-text">Müşterilerin doğrudan WhatsApp üzerinden iletişim kurabilmesi için</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-save">
+                                <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                                Kaydet
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 
                 <!-- E-Ticaret Ayarları -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>E-Ticaret Ayarları</h2>
+                <div class="settings-card">
+                    <div class="card-header-custom">
+                        <h3>
+                            <i data-lucide="shopping-cart" style="width: 24px; height: 24px;"></i>
+                            E-Ticaret Ayarları
+                        </h3>
                     </div>
-                    
-                    <form id="ecommerce-settings-form" onsubmit="saveEcommerceSettings(event)">
-                        <div class="form-group">
-                            <label>Para Birimi</label>
-                            <select id="currency">
-                                <option value="TRY">Türk Lirası (₺)</option>
-                                <option value="USD">Amerikan Doları ($)</option>
-                                <option value="EUR">Euro (€)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Minimum Sipariş Tutarı (₺)</label>
-                                <input type="number" id="min-order-amount" value="0" step="0.01">
+                    <div class="card-body-custom">
+                        <form id="ecommerce-settings-form">
+                            <div class="mb-3">
+                                <label class="form-label">Para Birimi</label>
+                                <select class="form-select" id="currency">
+                                    <option value="TRY">Türk Lirası (₺)</option>
+                                    <option value="USD">Amerikan Doları ($)</option>
+                                    <option value="EUR">Euro (€)</option>
+                                </select>
                             </div>
                             
-                            <div class="form-group">
-                                <label>Ücretsiz Kargo Limiti (₺)</label>
-                                <input type="number" id="free-shipping-limit" value="500" step="0.01">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Kargo Ücreti (₺)</label>
-                                <input type="number" id="shipping-fee" value="29.90" step="0.01">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Minimum Sipariş Tutarı (₺)</label>
+                                    <input type="number" class="form-control" id="min-order-amount" step="0.01">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ücretsiz Kargo Limiti (₺)</label>
+                                    <input type="number" class="form-control" id="free-shipping-limit" step="0.01">
+                                </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label>KDV Oranı (%)</label>
-                                <input type="number" id="tax-rate" value="20" step="0.01">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Kargo Ücreti (₺)</label>
+                                    <input type="number" class="form-control" id="shipping-fee" step="0.01">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">KDV Oranı (%)</label>
+                                    <input type="number" class="form-control" id="tax-rate" step="0.01">
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="guest-checkout">
-                                    <span class="toggle-slider"></span>
+                            
+                            <div class="mb-3 form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="guest-checkout">
+                                <label class="form-check-label" for="guest-checkout">
+                                    Misafir Alışverişine İzin Ver
                                 </label>
-                                Misafir Alışverişine İzin Ver
-                            </label>
-                            <small>Kullanıcılar kayıt olmadan alışveriş yapabilir</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="stock-management" checked>
-                                    <span class="toggle-slider"></span>
+                                <div class="form-text">Kullanıcılar kayıt olmadan alışveriş yapabilir</div>
+                            </div>
+                            
+                            <div class="mb-4 form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="stock-management" checked>
+                                <label class="form-check-label" for="stock-management">
+                                    Stok Yönetimini Aktif Et
                                 </label>
-                                Stok Yönetimini Aktif Et
-                            </label>
-                            <small>Stok bittiğinde ürün satışa kapatılır</small>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success">
-                            Kaydet
-                        </button>
-                    </form>
+                                <div class="form-text">Stok bittiğinde ürün satışa kapatılır</div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-save">
+                                <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                                Kaydet
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 
                 <!-- SEO Ayarları -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>SEO Ayarları</h2>
+                <div class="settings-card">
+                    <div class="card-header-custom">
+                        <h3>
+                            <i data-lucide="search" style="width: 24px; height: 24px;"></i>
+                            SEO Ayarları
+                        </h3>
                     </div>
-                    
-                    <form id="seo-settings-form" onsubmit="saveSeoSettings(event)">
-                        <div class="form-group">
-                            <label>Meta Başlık</label>
-                            <input type="text" id="meta-title" value="Gürbüz Oyuncak - Oyuncak Dünyasının Lideri">
-                            <small>Arama sonuçlarında görünecek başlık (50-60 karakter önerilir)</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Meta Açıklama</label>
-                            <textarea id="meta-description">Gürbüz Oyuncak, 1989'dan beri kaliteli oyuncaklar sunan Türkiye'nin önde gelen oyuncak toptancısıdır. Bebek, puzzle, kumandalı araç ve daha fazlası!</textarea>
-                            <small>Arama sonuçlarında görünecek açıklama (150-160 karakter önerilir)</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Anahtar Kelimeler</label>
-                            <input type="text" id="meta-keywords" value="oyuncak, bebek, puzzle, kumandalı araç, lego, antalya">
-                            <small>Virgülle ayırarak yazın</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Google Analytics ID</label>
-                            <input type="text" id="google-analytics" placeholder="G-XXXXXXXXXX">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Google Tag Manager ID</label>
-                            <input type="text" id="google-tag-manager" placeholder="GTM-XXXXXXX">
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success">
-                            Kaydet
-                        </button>
-                    </form>
+                    <div class="card-body-custom">
+                        <form id="seo-settings-form">
+                            <div class="mb-3">
+                                <label class="form-label">Meta Başlık</label>
+                                <input type="text" class="form-control" id="meta-title">
+                                <div class="form-text">Arama sonuçlarında görünecek başlık (50-60 karakter önerilir)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Meta Açıklama</label>
+                                <textarea class="form-control" id="meta-description" rows="3"></textarea>
+                                <div class="form-text">Arama sonuçlarında görünecek açıklama (150-160 karakter önerilir)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Anahtar Kelimeler</label>
+                                <input type="text" class="form-control" id="meta-keywords">
+                                <div class="form-text">Virgülle ayırarak yazın</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Google Analytics ID</label>
+                                <input type="text" class="form-control" id="google-analytics" placeholder="G-XXXXXXXXXX">
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label">Google Tag Manager ID</label>
+                                <input type="text" class="form-control" id="google-tag-manager" placeholder="GTM-XXXXXXX">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-save">
+                                <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                                Kaydet
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
     
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Component Loader -->
+    <script src="/components/js/component-loader.js"></script>
+    
     <script>
+        // Lucide icons'ı başlat
+        lucide.createIcons();
+        
         // Sayfa yüklendiğinde ayarları yükle
         document.addEventListener('DOMContentLoaded', function() {
             loadSettings();
+            initFilePreview();
         });
         
-        // Ayarları yükle
-        function loadSettings() {
-            // LocalStorage'dan veya API'den ayarları yükle
-            const savedSettings = localStorage.getItem('siteSettings');
-            if (savedSettings) {
-                const settings = JSON.parse(savedSettings);
-                // Form alanlarını doldur
-                if (settings.general) {
-                    Object.keys(settings.general).forEach(key => {
-                        const element = document.getElementById(key);
-                        if (element) element.value = settings.general[key];
-                    });
+        /**
+         * Ayarları API'den yükle
+         */
+        async function loadSettings() {
+            try {
+                const response = await fetch('/backend/api/settings.php');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    fillFormFields(result.data);
                 }
+            } catch (error) {
+                console.error('Ayarlar yüklenirken hata:', error);
+                showAlert('Ayarlar yüklenirken hata oluştu', 'danger');
             }
         }
         
-        // Genel ayarları kaydet
-        function saveGeneralSettings(event) {
-            event.preventDefault();
+        /**
+         * Form alanlarını doldur
+         */
+        function fillFormFields(settings) {
+            Object.keys(settings).forEach(group => {
+                Object.keys(settings[group]).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = settings[group][key] === true || settings[group][key] === '1';
+                        } else {
+                            element.value = settings[group][key];
+                        }
+                    }
+                });
+            });
+        }
+        
+        /**
+         * Genel ayarları kaydet
+         */
+        document.getElementById('general-settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            button.classList.add('loading');
             
             const settings = {
-                'site-name': document.getElementById('site-name').value,
-                'site-tagline': document.getElementById('site-tagline').value,
-                'site-description': document.getElementById('site-description').value,
-                'site-email': document.getElementById('site-email').value,
-                'site-phone': document.getElementById('site-phone').value,
-                'site-address': document.getElementById('site-address').value
+                general: {
+                    'site-name': document.getElementById('site-name').value,
+                    'site-tagline': document.getElementById('site-tagline').value,
+                    'site-description': document.getElementById('site-description').value,
+                    'site-email': document.getElementById('site-email').value,
+                    'site-phone': document.getElementById('site-phone').value,
+                    'site-address': document.getElementById('site-address').value
+                }
             };
             
-            saveToStorage('general', settings);
-            showAlert('Genel ayarlar kaydedildi', 'success');
-        }
-        
-        // Logo ayarlarını kaydet
-        function saveLogoSettings(event) {
-            event.preventDefault();
-            showAlert('Logo ayarları kaydedildi', 'success');
-        }
-        
-        // Sosyal medya ayarlarını kaydet
-        function saveSocialSettings(event) {
-            event.preventDefault();
+            const success = await saveSettings(settings);
+            button.classList.remove('loading');
             
-            const settings = {
-                'social-facebook': document.getElementById('social-facebook').value,
-                'social-instagram': document.getElementById('social-instagram').value,
-                'social-twitter': document.getElementById('social-twitter').value,
-                'social-youtube': document.getElementById('social-youtube').value,
-                'social-whatsapp': document.getElementById('social-whatsapp').value
-            };
-            
-            saveToStorage('social', settings);
-            showAlert('Sosyal medya ayarları kaydedildi', 'success');
-        }
-        
-        // E-ticaret ayarlarını kaydet
-        function saveEcommerceSettings(event) {
-            event.preventDefault();
-            
-            const settings = {
-                'currency': document.getElementById('currency').value,
-                'min-order-amount': document.getElementById('min-order-amount').value,
-                'free-shipping-limit': document.getElementById('free-shipping-limit').value,
-                'shipping-fee': document.getElementById('shipping-fee').value,
-                'tax-rate': document.getElementById('tax-rate').value,
-                'guest-checkout': document.getElementById('guest-checkout').checked,
-                'stock-management': document.getElementById('stock-management').checked
-            };
-            
-            saveToStorage('ecommerce', settings);
-            showAlert('E-ticaret ayarları kaydedildi', 'success');
-        }
-        
-        // SEO ayarlarını kaydet
-        function saveSeoSettings(event) {
-            event.preventDefault();
-            
-            const settings = {
-                'meta-title': document.getElementById('meta-title').value,
-                'meta-description': document.getElementById('meta-description').value,
-                'meta-keywords': document.getElementById('meta-keywords').value,
-                'google-analytics': document.getElementById('google-analytics').value,
-                'google-tag-manager': document.getElementById('google-tag-manager').value
-            };
-            
-            saveToStorage('seo', settings);
-            showAlert('SEO ayarları kaydedildi', 'success');
-        }
-        
-        // LocalStorage'a kaydet
-        function saveToStorage(section, data) {
-            let settings = {};
-            const savedSettings = localStorage.getItem('siteSettings');
-            if (savedSettings) {
-                settings = JSON.parse(savedSettings);
+            if (success) {
+                showAlert('Genel ayarlar başarıyla kaydedildi', 'success');
             }
-            settings[section] = data;
-            localStorage.setItem('siteSettings', JSON.stringify(settings));
+        });
+        
+        /**
+         * Logo ayarlarını kaydet
+         */
+        document.getElementById('logo-settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            button.classList.add('loading');
+            
+            // TODO: Logo upload işlemi
+            setTimeout(() => {
+                button.classList.remove('loading');
+                showAlert('Logo ayarları başarıyla kaydedildi', 'success');
+            }, 1000);
+        });
+        
+        /**
+         * Sosyal medya ayarlarını kaydet
+         */
+        document.getElementById('social-settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            button.classList.add('loading');
+            
+            const settings = {
+                social: {
+                    'social-facebook': document.getElementById('social-facebook').value,
+                    'social-instagram': document.getElementById('social-instagram').value,
+                    'social-twitter': document.getElementById('social-twitter').value,
+                    'social-youtube': document.getElementById('social-youtube').value,
+                    'social-whatsapp': document.getElementById('social-whatsapp').value
+                }
+            };
+            
+            const success = await saveSettings(settings);
+            button.classList.remove('loading');
+            
+            if (success) {
+                showAlert('Sosyal medya ayarları başarıyla kaydedildi', 'success');
+            }
+        });
+        
+        /**
+         * E-ticaret ayarlarını kaydet
+         */
+        document.getElementById('ecommerce-settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            button.classList.add('loading');
+            
+            const settings = {
+                ecommerce: {
+                    'currency': document.getElementById('currency').value,
+                    'min-order-amount': document.getElementById('min-order-amount').value,
+                    'free-shipping-limit': document.getElementById('free-shipping-limit').value,
+                    'shipping-fee': document.getElementById('shipping-fee').value,
+                    'tax-rate': document.getElementById('tax-rate').value,
+                    'guest-checkout': document.getElementById('guest-checkout').checked,
+                    'stock-management': document.getElementById('stock-management').checked
+                }
+            };
+            
+            const success = await saveSettings(settings);
+            button.classList.remove('loading');
+            
+            if (success) {
+                showAlert('E-ticaret ayarları başarıyla kaydedildi', 'success');
+            }
+        });
+        
+        /**
+         * SEO ayarlarını kaydet
+         */
+        document.getElementById('seo-settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('button[type="submit"]');
+            button.classList.add('loading');
+            
+            const settings = {
+                seo: {
+                    'meta-title': document.getElementById('meta-title').value,
+                    'meta-description': document.getElementById('meta-description').value,
+                    'meta-keywords': document.getElementById('meta-keywords').value,
+                    'google-analytics': document.getElementById('google-analytics').value,
+                    'google-tag-manager': document.getElementById('google-tag-manager').value
+                }
+            };
+            
+            const success = await saveSettings(settings);
+            button.classList.remove('loading');
+            
+            if (success) {
+                showAlert('SEO ayarları başarıyla kaydedildi', 'success');
+            }
+        });
+        
+        /**
+         * Ayarları API'ye kaydet
+         */
+        async function saveSettings(settings) {
+            try {
+                const response = await fetch('/backend/api/settings.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    showAlert(result.message || 'Kaydetme sırasında hata oluştu', 'danger');
+                    return false;
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Kaydetme hatası:', error);
+                showAlert('Kaydetme sırasında hata oluştu', 'danger');
+                return false;
+            }
         }
         
-        // Logo önizleme
-        function previewLogo(event, previewId) {
-            const file = event.target.files[0];
+        /**
+         * Dosya önizleme
+         */
+        function initFilePreview() {
+            document.getElementById('site-logo').addEventListener('change', function(e) {
+                previewFile(e.target, 'logo-preview');
+            });
+            
+            document.getElementById('site-favicon').addEventListener('change', function(e) {
+                previewFile(e.target, 'favicon-preview');
+            });
+        }
+        
+        function previewFile(input, previewId) {
+            const file = input.files[0];
+            const preview = document.getElementById(previewId);
+            
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById(previewId).innerHTML = 
-                        `<img src="${e.target.result}" alt="Preview">`;
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    preview.classList.remove('empty');
                 };
                 reader.readAsDataURL(file);
             }
         }
         
-        // Alert göster
+        /**
+         * Alert göster
+         */
         function showAlert(message, type) {
             const container = document.getElementById('alert-container');
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
             
             container.innerHTML = `
-                <div class="alert ${alertClass}">
+                <div class="alert ${alertClass}" role="alert">
+                    <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>
                     ${message}
                 </div>
             `;
+            
+            lucide.createIcons();
             
             setTimeout(() => {
                 container.innerHTML = '';

@@ -23,7 +23,7 @@ $request_uri = $_SERVER['REQUEST_URI'];
 
 // ID parametresini al
 $id = null;
-$action = null;
+$action = isset($_GET['action']) ? $_GET['action'] : null;
 
 if (preg_match('/\/homepage-sections\/(\d+)\/products/', $request_uri, $matches)) {
     $id = intval($matches[1]);
@@ -34,7 +34,40 @@ if (preg_match('/\/homepage-sections\/(\d+)\/products/', $request_uri, $matches)
 
 switch ($method) {
     case 'GET':
-        if ($id && $action === 'products') {
+        // Özel action'lar
+        if ($action === 'get_countdown_banners') {
+            // Aktif countdown banner'ları getir
+            $banners = $section->getActiveCountdownBanners();
+            echo json_encode([
+                'success' => true,
+                'banners' => $banners,
+                'count' => count($banners)
+            ]);
+        } elseif ($action === 'get_all_countdown_banners') {
+            // Tüm countdown banner'ları getir (admin için)
+            $banners = $section->getAllCountdownBanners();
+            echo json_encode([
+                'success' => true,
+                'banners' => $banners,
+                'count' => count($banners)
+            ]);
+        } elseif ($action === 'get_countdown_banner' && isset($_GET['id'])) {
+            // Belirli countdown banner'ı getir
+            $banner = $section->getCountdownBannerForFrontend(intval($_GET['id']));
+            if ($banner) {
+                echo json_encode([
+                    'success' => true,
+                    'banner' => $banner
+                ]);
+            } else {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Banner bulunamadı.']);
+            }
+        } elseif ($action === 'check_expired_banners') {
+            // Süresi dolan banner'ları kontrol et ve deaktive et
+            $result = $section->checkAndDeactivateExpiredBanners();
+            echo json_encode($result);
+        } elseif ($id && $action === 'products') {
             // Bölüm ürünlerini getir
             $section->id = $id;
             if ($section->readOne()) {

@@ -1,10 +1,15 @@
 <?php
-// Basit auth kontrolü (production'da session kullanılmalı)
-// session_start();
-// if (!isset($_SESSION['admin_logged_in'])) {
-//     header('Location: login.php');
-//     exit;
-// }
+require_once '../backend/config/database.php';
+require_once '../backend/classes/AdminAuth.php';
+
+// Auth kontrolü
+if (!AdminAuth::isAdminLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
+// Include components
+require_once '../components/ComponentLoader.php';
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -12,80 +17,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sipariş Yönetimi | Gürbüz Oyuncak Admin</title>
+    
+    <!-- Bootstrap 5.3.2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6.4.0 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Component CSS -->
+    <link href="../components/css/component-loader.css" rel="stylesheet">
+    
     <style>
+        :root {
+            --primary-color: #1e88e5;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6;
+            background-color: var(--gray-50);
+            font-size: 14px;
         }
         
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
+        .main-wrapper {
             min-height: 100vh;
+            display: flex;
         }
         
-        .sidebar {
-            background-color: #1F2937;
-            color: #FFFFFF;
-            padding: 2rem 0;
+        .content-area {
+            flex: 1;
+            padding: 1.5rem;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
         }
         
-        .sidebar-header {
-            padding: 0 1.5rem 2rem;
-            border-bottom: 1px solid #374151;
+        .content-area.sidebar-collapsed {
+            margin-left: 80px;
         }
         
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            color: #1E88E5;
+        @media (max-width: 768px) {
+            .content-area {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            .content-area.sidebar-collapsed {
+                margin-left: 0;
+            }
         }
         
-        .sidebar-menu {
-            list-style: none;
-            margin-top: 2rem;
-        }
-        
-        .sidebar-menu li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .sidebar-menu a {
-            display: block;
-            padding: 0.75rem 1.5rem;
-            color: #D1D5DB;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background-color: #374151;
-            color: #FFFFFF;
-            border-left: 3px solid #1E88E5;
-        }
-        
-        .main-content {
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), #1565c0);
+            border-radius: 12px;
             padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
         }
         
-        .top-bar {
-            background-color: #FFFFFF;
-            padding: 1rem 2rem;
-            margin: -2rem -2rem 2rem;
-            border-bottom: 1px solid #E5E7EB;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-        
-        .top-bar h1 {
-            font-size: 1.875rem;
-            color: #1F2937;
-            font-weight: 600;
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
         }
         
         .stats-grid {
@@ -96,366 +104,509 @@
         }
         
         .stat-card {
-            background-color: #FFFFFF;
+            background: white;
+            border-radius: 12px;
             padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
         }
         
-        .stat-card h3 {
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon.primary { background: var(--primary-color); }
+        .stat-icon.success { background: var(--success-color); }
+        .stat-icon.warning { background: var(--warning-color); }
+        .stat-icon.danger { background: var(--danger-color); }
+        
+        .stat-label {
+            color: var(--gray-600);
             font-size: 0.875rem;
-            color: #6B7280;
             font-weight: 500;
             margin-bottom: 0.5rem;
         }
         
-        .stat-card .value {
+        .stat-value {
             font-size: 2rem;
             font-weight: 700;
-            color: #1F2937;
+            color: var(--gray-900);
+            margin: 0;
         }
         
         .card {
-            background-color: #FFFFFF;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             overflow: hidden;
+            margin-bottom: 2rem;
         }
         
         .card-header {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
             padding: 1.5rem;
-            border-bottom: 1px solid #E5E7EB;
+            border-bottom: 1px solid var(--gray-200);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: between;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #1F2937;
-        }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background-color: #1E88E5;
-            color: #FFFFFF;
-        }
-        
-        .btn-primary:hover {
-            background-color: #1565C0;
-        }
-        
-        .btn-success {
-            background-color: #10B981;
-            color: #FFFFFF;
-        }
-        
-        .btn-warning {
-            background-color: #F59E0B;
-            color: #FFFFFF;
-        }
-        
-        .btn-danger {
-            background-color: #EF4444;
-            color: #FFFFFF;
-        }
-        
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            border-radius: 0.25rem;
-        }
-        
-        .badge-beklemede {
-            background-color: #FEF3C7;
-            color: #92400E;
-        }
-        
-        .badge-onaylandi {
-            background-color: #DBEAFE;
-            color: #1E40AF;
-        }
-        
-        .badge-hazirlaniyor {
-            background-color: #E0E7FF;
-            color: #3730A3;
-        }
-        
-        .badge-kargoda {
-            background-color: #FDE68A;
-            color: #92400E;
-        }
-        
-        .badge-teslim-edildi {
-            background-color: #D1FAE5;
-            color: #065F46;
-        }
-        
-        .badge-iptal-edildi {
-            background-color: #FEE2E2;
-            color: #991B1B;
-        }
-        
-        .badge-odendi {
-            background-color: #D1FAE5;
-            color: #065F46;
-        }
-        
-        .badge-basarisiz {
-            background-color: #FEE2E2;
-            color: #991B1B;
-        }
-        
-        .table-container {
-            overflow-x: auto;
-        }
-        
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .table th,
-        .table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .table th {
-            background-color: #F9FAFB;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.875rem;
-        }
-        
-        .table td {
-            font-size: 0.875rem;
-            color: #6B7280;
-        }
-        
-        .actions {
+            color: var(--gray-900);
+            margin: 0;
             display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
         
-        .filter-bar {
+        .filter-section {
             display: flex;
             gap: 1rem;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
         
-        .form-group {
-            margin-bottom: 1rem;
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
         }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
+        .form-control {
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+        }
+        
+        .btn {
+            border-radius: 8px;
             font-weight: 500;
-            color: #374151;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+        }
+        
+        .badge-beklemede { background: #fef3c7; color: #92400e; }
+        .badge-onaylandi { background: #dbeafe; color: #1e40af; }
+        .badge-hazirlaniyor { background: #e0e7ff; color: #3730a3; }
+        .badge-kargoda { background: #fde68a; color: #92400e; }
+        .badge-teslim-edildi { background: #d1fae5; color: #065f46; }
+        .badge-iptal-edildi { background: #fee2e2; color: #991b1b; }
+        .badge-odendi { background: #d1fae5; color: #065f46; }
+        .badge-basarisiz { background: #fee2e2; color: #991b1b; }
+        .badge-beklemede-odeme { background: #fef3c7; color: #92400e; }
+        .badge-iade { background: #e0e7ff; color: #3730a3; }
+        
+        .order-table {
             font-size: 0.875rem;
         }
         
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
+        .order-table th {
+            background: var(--gray-50);
+            color: var(--gray-700);
+            font-weight: 600;
+            border-bottom: 2px solid var(--gray-200);
+            padding: 1rem 0.75rem;
+            white-space: nowrap;
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
+        .order-table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: middle;
         }
         
-        .modal.active {
+        .order-number {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .customer-name {
+            color: var(--gray-700);
+        }
+        
+        .amount {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background-color: #FFFFFF;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .order-items {
-            margin-top: 1rem;
-        }
-        
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .alert {
-            padding: 1rem;
-            border-radius: 0.375rem;
-            margin-bottom: 1rem;
-        }
-        
-        .alert-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-            border: 1px solid #A7F3D0;
-        }
-        
-        .alert-error {
-            background-color: #FEE2E2;
-            color: #991B1B;
-            border: 1px solid #FECACA;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
         
         .pagination {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 0.5rem;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
         }
         
-        .pagination button {
+        .page-btn {
             padding: 0.5rem 0.75rem;
-            border: 1px solid #D1D5DB;
-            background-color: #FFFFFF;
-            cursor: pointer;
-            border-radius: 0.25rem;
+            border: 1px solid var(--gray-300);
+            background: white;
+            color: var(--gray-700);
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            min-width: 40px;
+            text-align: center;
         }
         
-        .pagination button:hover {
-            background-color: #F3F4F6;
+        .page-btn:hover {
+            background: var(--gray-100);
+            color: var(--gray-900);
         }
         
-        .pagination button.active {
-            background-color: #1E88E5;
-            color: #FFFFFF;
-            border-color: #1E88E5;
+        .page-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.5rem;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .order-detail-section {
+            margin-bottom: 2rem;
+        }
+        
+        .order-detail-section h5 {
+            color: var(--gray-900);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            background: var(--gray-50);
+        }
+        
+        .order-item-info h6 {
+            margin: 0 0 0.25rem 0;
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+        
+        .order-item-info small {
+            color: var(--gray-600);
+        }
+        
+        .order-item-price {
+            text-align: right;
+        }
+        
+        .order-item-price .quantity {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+        
+        .order-item-price .total {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        
+        .toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 0.75rem;
+            max-width: 400px;
+        }
+        
+        .toast.success {
+            border-left-color: var(--success-color);
+        }
+        
+        .toast.error {
+            border-left-color: var(--danger-color);
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .page-header {
+                padding: 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .form-control {
+                width: 100%;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .order-table {
+                font-size: 0.75rem;
+            }
+            
+            .order-table th,
+            .order-table td {
+                padding: 0.5rem 0.25rem;
+            }
+        }
+        
+        .mobile-swipe-hint {
+            display: none;
+            background: linear-gradient(90deg, var(--primary-color), #1565c0);
+            color: white;
+            padding: 0.75rem;
+            text-align: center;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-swipe-hint {
+                display: block;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="admin-layout">
-        <?php include 'includes/sidebar.php'; ?>
-        
-        <div class="main-content">
-            <div class="top-bar">
-                <h1>Sipariş Yönetimi</h1>
+    <!-- Component Loader -->
+    <?php includeComponent('navbar', ['variant' => 'admin']); ?>
+    <?php includeComponent('sidebar', ['variant' => 'admin']); ?>
+    
+    <div class="main-wrapper">
+        <div class="content-area">
+            <!-- Sayfa Başlığı -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-shopping-cart"></i>
+                    Sipariş Yönetimi
+                </h1>
+                <p class="mb-0 opacity-75">Tüm siparişleri görüntüleyin ve yönetin</p>
             </div>
             
-            <div id="alert-container"></div>
+            <!-- Mobil Swipe İpucu -->
+            <div class="mobile-swipe-hint">
+                <i class="fas fa-hand-point-right"></i>
+                Mobilde sağa kaydırarak daha fazla bilgi görebilirsiniz
+            </div>
             
             <!-- İstatistikler -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Bugünkü Siparişler</h3>
-                    <div class="value" id="daily-orders">-</div>
+                    <div class="stat-icon primary">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-label">Bugünkü Siparişler</div>
+                    <div class="stat-value" id="daily-orders">-</div>
                 </div>
+                
                 <div class="stat-card">
-                    <h3>Bekleyen Siparişler</h3>
-                    <div class="value" id="pending-orders">-</div>
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-label">Bekleyen Siparişler</div>
+                    <div class="stat-value" id="pending-orders">-</div>
                 </div>
+                
                 <div class="stat-card">
-                    <h3>Bugünkü Satış</h3>
-                    <div class="value" id="daily-sales">₺-</div>
+                    <div class="stat-icon success">
+                        <i class="fas fa-turkish-lira-sign"></i>
+                    </div>
+                    <div class="stat-label">Bugünkü Satış</div>
+                    <div class="stat-value" id="daily-sales">₺-</div>
                 </div>
+                
                 <div class="stat-card">
-                    <h3>Toplam Sipariş</h3>
-                    <div class="value" id="total-orders">-</div>
+                    <div class="stat-icon danger">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-label">Toplam Sipariş</div>
+                    <div class="stat-value" id="total-orders">-</div>
                 </div>
             </div>
             
+            <!-- Ana Kart -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Siparişler</h2>
+                    <h2 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Sipariş Listesi
+                    </h2>
                 </div>
                 
-                <div class="card-body">
+                <div class="card-body p-0">
                     <!-- Filtreler -->
-                    <div class="filter-bar">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <input type="text" id="search-input" placeholder="Sipariş no, müşteri adı..." 
-                                   style="width: 200px;" onkeyup="filterOrders()">
+                    <div class="p-4 border-bottom">
+                        <div class="filter-section">
+                            <div class="filter-group">
+                                <i class="fas fa-search text-muted"></i>
+                                <input type="text" class="form-control" id="search-input" 
+                                       placeholder="Sipariş no, müşteri adı..." 
+                                       style="min-width: 200px;">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <select class="form-control" id="status-filter">
+                                    <option value="">Tüm Durumlar</option>
+                                    <option value="beklemede">Beklemede</option>
+                                    <option value="onaylandi">Onaylandı</option>
+                                    <option value="hazirlaniyor">Hazırlanıyor</option>
+                                    <option value="kargoda">Kargoda</option>
+                                    <option value="teslim_edildi">Teslim Edildi</option>
+                                    <option value="iptal_edildi">İptal Edildi</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <select class="form-control" id="payment-filter">
+                                    <option value="">Tüm Ödemeler</option>
+                                    <option value="beklemede">Ödeme Bekliyor</option>
+                                    <option value="odendi">Ödendi</option>
+                                    <option value="basarisiz">Başarısız</option>
+                                    <option value="iade">İade</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <input type="date" class="form-control" id="date-filter">
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="loadOrders(1)">
+                                <i class="fas fa-sync-alt"></i>
+                                Yenile
+                            </button>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <select id="status-filter" onchange="filterOrders()" style="width: 150px;">
-                                <option value="">Tüm Durumlar</option>
-                                <option value="beklemede">Beklemede</option>
-                                <option value="onaylandi">Onaylandı</option>
-                                <option value="hazirlaniyor">Hazırlanıyor</option>
-                                <option value="kargoda">Kargoda</option>
-                                <option value="teslim_edildi">Teslim Edildi</option>
-                                <option value="iptal_edildi">İptal Edildi</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <select id="payment-filter" onchange="filterOrders()" style="width: 150px;">
-                                <option value="">Tüm Ödemeler</option>
-                                <option value="beklemede">Ödeme Bekliyor</option>
-                                <option value="odendi">Ödendi</option>
-                                <option value="basarisiz">Başarısız</option>
-                                <option value="iade">İade</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <input type="date" id="date-filter" onchange="filterOrders()" style="width: 150px;">
-                        </div>
-                        <button class="btn btn-primary" onclick="loadOrders()">Yenile</button>
                     </div>
                     
                     <!-- Sipariş Tablosu -->
-                    <div class="table-container">
-                        <table class="table">
+                    <div class="table-responsive">
+                        <table class="table table-hover order-table mb-0">
                             <thead>
                                 <tr>
                                     <th>Sipariş No</th>
@@ -469,8 +620,13 @@
                             </thead>
                             <tbody id="orders-tbody">
                                 <tr>
-                                    <td colspan="7" style="text-align: center; padding: 2rem;">
-                                        Yükleniyor...
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="d-flex justify-content-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Yükleniyor...</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 text-muted">Siparişler yükleniyor...</div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -478,66 +634,105 @@
                     </div>
                     
                     <!-- Sayfalama -->
-                    <div id="pagination-container"></div>
+                    <div id="pagination-container" class="p-4 border-top"></div>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Sipariş Detay Modal -->
-    <div id="order-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Sipariş Detayları</h3>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            
-            <div id="order-details">
-                <!-- Sipariş detayları buraya yüklenecek -->
+    <div class="modal fade" id="orderModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle"></i>
+                        Sipariş Detayları
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div id="order-details">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Yükleniyor...</span>
+                            </div>
+                            <div class="mt-2">Sipariş detayları yükleniyor...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../components/js/component-loader.js"></script>
+    
     <script>
+        // Global değişkenler
         let currentPage = 1;
         let totalPages = 1;
         let orders = [];
+        let isLoading = false;
         
         // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
             loadOrders();
             loadStats();
         });
         
+        // Sayfa başlatma
+        function initializePage() {
+            // Event listener'ları ekle
+            document.getElementById('search-input').addEventListener('input', debounce(() => loadOrders(1), 500));
+            document.getElementById('status-filter').addEventListener('change', () => loadOrders(1));
+            document.getElementById('payment-filter').addEventListener('change', () => loadOrders(1));
+            document.getElementById('date-filter').addEventListener('change', () => loadOrders(1));
+            
+            // Modal event listener
+            document.getElementById('orderModal').addEventListener('hidden.bs.modal', function() {
+                // Modal kapandığında temizlik
+            });
+        }
+        
         // İstatistikleri yükle
         async function loadStats() {
             try {
-                const response = await fetch('../backend/api/siparisler.php/istatistikler');
+                const response = await fetch('../backend/api/siparisler.php?stats=1');
                 const data = await response.json();
                 
                 if (data.success) {
                     const stats = data.data;
                     
-                    // Bugünkü siparişler
-                    const today = stats.gunluk_satislar.find(s => s.tarih === new Date().toISOString().split('T')[0]);
-                    document.getElementById('daily-orders').textContent = today ? today.siparis_sayisi : '0';
-                    document.getElementById('daily-sales').textContent = today ? `₺${parseFloat(today.toplam_satis || 0).toFixed(2)}` : '₺0.00';
+                    // Bugünkü siparişler ve satış
+                    document.getElementById('daily-orders').textContent = stats.gunluk_siparisler || '0';
+                    document.getElementById('daily-sales').textContent = `₺${(stats.gunluk_satis || 0).toFixed(2)}`;
                     
                     // Bekleyen siparişler
-                    const pending = stats.durum_dagilimi.find(d => d.durum === 'beklemede');
-                    document.getElementById('pending-orders').textContent = pending ? pending.siparis_sayisi : '0';
+                    document.getElementById('pending-orders').textContent = stats.bekleyen_siparisler || '0';
                     
-                    // Toplam sipariş (bu ay)
-                    const thisMonth = stats.aylik_ozet[0];
-                    document.getElementById('total-orders').textContent = thisMonth ? thisMonth.siparis_sayisi : '0';
+                    // Toplam sipariş
+                    document.getElementById('total-orders').textContent = stats.toplam_siparisler || '0';
                 }
             } catch (error) {
                 console.error('İstatistikler yüklenemedi:', error);
+                showToast('İstatistikler yüklenirken hata oluştu', 'error');
             }
         }
         
         // Siparişleri yükle
         async function loadOrders(page = 1) {
+            if (isLoading) return;
+            
+            isLoading = true;
+            currentPage = page;
+            
             try {
                 const searchTerm = document.getElementById('search-input').value;
                 const statusFilter = document.getElementById('status-filter').value;
@@ -561,7 +756,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    orders = data.data;
+                    orders = data.data || [];
                     displayOrders(orders);
                     
                     // Sayfalama bilgilerini güncelle
@@ -571,12 +766,16 @@
                         updatePagination();
                     }
                 } else {
-                    showAlert('Siparişler yüklenirken hata oluştu', 'error');
+                    showToast(data.message || 'Siparişler yüklenirken hata oluştu', 'error');
+                    displayOrders([]);
                 }
                 
             } catch (error) {
                 console.error('Siparişler yüklenemedi:', error);
-                showAlert('Siparişler yüklenirken hata oluştu', 'error');
+                showToast('Siparişler yüklenirken hata oluştu', 'error');
+                displayOrders([]);
+            } finally {
+                isLoading = false;
             }
         }
         
@@ -587,8 +786,11 @@
             if (!orders || orders.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 2rem;">
-                            Sipariş bulunamadı
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-search fa-2x mb-3"></i>
+                                <div>Sipariş bulunamadı</div>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -597,10 +799,19 @@
             
             tbody.innerHTML = orders.map(order => `
                 <tr>
-                    <td><strong>${order.siparis_no}</strong></td>
-                    <td>${order.musteri_adi}</td>
-                    <td>${formatDate(order.siparis_tarihi)}</td>
-                    <td>₺${parseFloat(order.toplam_tutar || 0).toFixed(2)}</td>
+                    <td>
+                        <div class="order-number">${order.siparis_no}</div>
+                    </td>
+                    <td>
+                        <div class="customer-name">${order.musteri_adi}</div>
+                        <small class="text-muted">${order.musteri_eposta}</small>
+                    </td>
+                    <td>
+                        <div>${formatDateTime(order.siparis_tarihi)}</div>
+                    </td>
+                    <td>
+                        <div class="amount">₺${parseFloat(order.toplam_tutar || 0).toFixed(2)}</div>
+                    </td>
                     <td>
                         <span class="badge badge-${order.durum}">
                             ${getDurumText(order.durum)}
@@ -613,10 +824,12 @@
                     </td>
                     <td>
                         <div class="actions">
-                            <button class="btn btn-primary btn-sm" onclick="viewOrder(${order.id})">
+                            <button class="btn btn-primary btn-sm" onclick="viewOrder(${order.id})" title="Detay Görüntüle">
+                                <i class="fas fa-eye"></i>
                                 Detay
                             </button>
-                            <button class="btn btn-warning btn-sm" onclick="updateOrderStatus(${order.id})">
+                            <button class="btn btn-warning btn-sm" onclick="quickUpdateStatus(${order.id})" title="Durum Güncelle">
+                                <i class="fas fa-edit"></i>
                                 Güncelle
                             </button>
                         </div>
@@ -626,7 +839,7 @@
         }
         
         // Tarih formatla
-        function formatDate(dateString) {
+        function formatDateTime(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('tr-TR', {
                 day: '2-digit',
@@ -674,30 +887,42 @@
             
             // Önceki sayfa
             if (currentPage > 1) {
-                html += `<button onclick="loadOrders(${currentPage - 1})">« Önceki</button>`;
+                html += `<a href="#" class="page-btn" onclick="loadOrders(${currentPage - 1})">« Önceki</a>`;
             }
             
-            // Sayfa numaraları
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === currentPage) {
-                    html += `<button class="active">${i}</button>`;
-                } else {
-                    html += `<button onclick="loadOrders(${i})">${i}</button>`;
+            // Sayfa numaraları (max 5 sayfa göster)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            if (startPage > 1) {
+                html += `<a href="#" class="page-btn" onclick="loadOrders(1)">1</a>`;
+                if (startPage > 2) {
+                    html += `<span class="page-btn" style="pointer-events: none;">...</span>`;
                 }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<a href="#" class="page-btn active">${i}</a>`;
+                } else {
+                    html += `<a href="#" class="page-btn" onclick="loadOrders(${i})">${i}</a>`;
+                }
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    html += `<span class="page-btn" style="pointer-events: none;">...</span>`;
+                }
+                html += `<a href="#" class="page-btn" onclick="loadOrders(${totalPages})">${totalPages}</a>`;
             }
             
             // Sonraki sayfa
             if (currentPage < totalPages) {
-                html += `<button onclick="loadOrders(${currentPage + 1})">Sonraki »</button>`;
+                html += `<a href="#" class="page-btn" onclick="loadOrders(${currentPage + 1})">Sonraki »</a>`;
             }
             
             html += '</div>';
             container.innerHTML = html;
-        }
-        
-        // Filtreleme
-        function filterOrders() {
-            loadOrders(1);
         }
         
         // Sipariş detaylarını görüntüle
@@ -709,14 +934,17 @@
                 if (data.success) {
                     const order = data.data;
                     displayOrderDetails(order);
-                    document.getElementById('order-modal').classList.add('active');
+                    
+                    // Modal göster
+                    const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+                    modal.show();
                 } else {
-                    showAlert('Sipariş detayları yüklenemedi', 'error');
+                    showToast('Sipariş detayları yüklenemedi', 'error');
                 }
                 
             } catch (error) {
                 console.error('Sipariş detayları yüklenemedi:', error);
-                showAlert('Sipariş detayları yüklenirken hata oluştu', 'error');
+                showToast('Sipariş detayları yüklenirken hata oluştu', 'error');
             }
         }
         
@@ -728,96 +956,136 @@
             if (order.kalemler && order.kalemler.length > 0) {
                 itemsHtml = order.kalemler.map(item => `
                     <div class="order-item">
-                        <div>
-                            <strong>${item.urun_adi}</strong><br>
+                        <div class="order-item-info">
+                            <h6>${item.urun_adi}</h6>
                             <small>Ürün Kodu: ${item.urun_kodu || '-'}</small>
                         </div>
-                        <div style="text-align: right;">
-                            <div>${item.miktar} x ₺${parseFloat(item.birim_fiyat).toFixed(2)}</div>
-                            <strong>₺${parseFloat(item.toplam_fiyat).toFixed(2)}</strong>
+                        <div class="order-item-price">
+                            <div class="quantity">${item.miktar} x ₺${parseFloat(item.birim_fiyat).toFixed(2)}</div>
+                            <div class="total">₺${parseFloat(item.toplam_fiyat).toFixed(2)}</div>
                         </div>
                     </div>
                 `).join('');
+            } else {
+                itemsHtml = '<p class="text-muted">Sipariş kalemi bulunamadı</p>';
             }
             
             container.innerHTML = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <div>
-                        <h4>Sipariş Bilgileri</h4>
-                        <p><strong>Sipariş No:</strong> ${order.siparis_no}</p>
-                        <p><strong>Tarih:</strong> ${formatDate(order.siparis_tarihi)}</p>
-                        <p><strong>Durum:</strong> 
-                            <span class="badge badge-${order.durum}">${getDurumText(order.durum)}</span>
-                        </p>
-                        <p><strong>Ödeme Durumu:</strong> 
-                            <span class="badge badge-${order.odeme_durumu}">${getOdemeDurumText(order.odeme_durumu)}</span>
-                        </p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="order-detail-section">
+                            <h5><i class="fas fa-info-circle"></i> Sipariş Bilgileri</h5>
+                            <p><strong>Sipariş No:</strong> ${order.siparis_no}</p>
+                            <p><strong>Tarih:</strong> ${formatDateTime(order.siparis_tarihi)}</p>
+                            <p><strong>Durum:</strong> 
+                                <span class="badge badge-${order.durum}">${getDurumText(order.durum)}</span>
+                            </p>
+                            <p><strong>Ödeme Durumu:</strong> 
+                                <span class="badge badge-${order.odeme_durumu}">${getOdemeDurumText(order.odeme_durumu)}</span>
+                            </p>
+                        </div>
                         
-                        <h4 style="margin-top: 1.5rem;">Müşteri Bilgileri</h4>
-                        <p><strong>Ad:</strong> ${order.musteri_adi}</p>
-                        <p><strong>E-posta:</strong> ${order.musteri_eposta}</p>
-                        <p><strong>Telefon:</strong> ${order.musteri_telefon}</p>
+                        <div class="order-detail-section">
+                            <h5><i class="fas fa-user"></i> Müşteri Bilgileri</h5>
+                            <p><strong>Ad:</strong> ${order.musteri_adi}</p>
+                            <p><strong>E-posta:</strong> ${order.musteri_eposta}</p>
+                            <p><strong>Telefon:</strong> ${order.musteri_telefon || '-'}</p>
+                        </div>
                     </div>
                     
-                    <div>
-                        <h4>Teslimat Adresi</h4>
-                        <p>${order.teslimat_adresi}</p>
-                        <p>${order.teslimat_ilce}, ${order.teslimat_il}</p>
-                        ${order.teslimat_posta_kodu ? `<p>Posta Kodu: ${order.teslimat_posta_kodu}</p>` : ''}
+                    <div class="col-md-6">
+                        <div class="order-detail-section">
+                            <h5><i class="fas fa-map-marker-alt"></i> Teslimat Adresi</h5>
+                            <p>${order.teslimat_adresi || 'Adres bilgisi yok'}</p>
+                            <p>${order.teslimat_ilce || ''} ${order.teslimat_il || ''}</p>
+                            ${order.teslimat_posta_kodu ? `<p><strong>Posta Kodu:</strong> ${order.teslimat_posta_kodu}</p>` : ''}
+                        </div>
                         
-                        <h4 style="margin-top: 1.5rem;">Fiyat Detayı</h4>
-                        <p><strong>Ara Toplam:</strong> ₺${parseFloat(order.ara_toplam).toFixed(2)}</p>
-                        <p><strong>Vergi:</strong> ₺${parseFloat(order.vergi_toplami || 0).toFixed(2)}</p>
-                        <p><strong>Kargo:</strong> ₺${parseFloat(order.kargo_ucreti || 0).toFixed(2)}</p>
-                        <p><strong>İndirim:</strong> -₺${parseFloat(order.indirim_tutari || 0).toFixed(2)}</p>
-                        <p><strong>Toplam:</strong> ₺${parseFloat(order.toplam_tutar).toFixed(2)}</p>
+                        <div class="order-detail-section">
+                            <h5><i class="fas fa-calculator"></i> Fiyat Detayı</h5>
+                            <p><strong>Ara Toplam:</strong> ₺${parseFloat(order.ara_toplam || 0).toFixed(2)}</p>
+                            <p><strong>Vergi:</strong> ₺${parseFloat(order.vergi_toplami || 0).toFixed(2)}</p>
+                            <p><strong>Kargo:</strong> ₺${parseFloat(order.kargo_ucreti || 0).toFixed(2)}</p>
+                            <p><strong>İndirim:</strong> -₺${parseFloat(order.indirim_tutari || 0).toFixed(2)}</p>
+                            <hr>
+                            <p><strong>Toplam:</strong> <span class="fs-5 fw-bold text-primary">₺${parseFloat(order.toplam_tutar || 0).toFixed(2)}</span></p>
+                        </div>
                     </div>
                 </div>
                 
-                <div style="margin-top: 2rem;">
-                    <h4>Sipariş Kalemleri</h4>
-                    <div class="order-items">
-                        ${itemsHtml}
-                    </div>
+                <div class="order-detail-section">
+                    <h5><i class="fas fa-list"></i> Sipariş Kalemleri</h5>
+                    ${itemsHtml}
                 </div>
                 
-                <div style="margin-top: 2rem;">
-                    <h4>Durum Güncelle</h4>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <select id="new-status" style="flex: 1;">
-                            <option value="beklemede" ${order.durum === 'beklemede' ? 'selected' : ''}>Beklemede</option>
-                            <option value="onaylandi" ${order.durum === 'onaylandi' ? 'selected' : ''}>Onaylandı</option>
-                            <option value="hazirlaniyor" ${order.durum === 'hazirlaniyor' ? 'selected' : ''}>Hazırlanıyor</option>
-                            <option value="kargoda" ${order.durum === 'kargoda' ? 'selected' : ''}>Kargoda</option>
-                            <option value="teslim_edildi" ${order.durum === 'teslim_edildi' ? 'selected' : ''}>Teslim Edildi</option>
-                            <option value="iptal_edildi" ${order.durum === 'iptal_edildi' ? 'selected' : ''}>İptal Edildi</option>
-                        </select>
-                        <button class="btn btn-success" onclick="saveOrderStatus(${order.id})">
-                            Güncelle
-                        </button>
+                <div class="order-detail-section">
+                    <h5><i class="fas fa-edit"></i> Durum Güncelle</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <select class="form-control" id="new-status">
+                                <option value="beklemede" ${order.durum === 'beklemede' ? 'selected' : ''}>Beklemede</option>
+                                <option value="onaylandi" ${order.durum === 'onaylandi' ? 'selected' : ''}>Onaylandı</option>
+                                <option value="hazirlaniyor" ${order.durum === 'hazirlaniyor' ? 'selected' : ''}>Hazırlanıyor</option>
+                                <option value="kargoda" ${order.durum === 'kargoda' ? 'selected' : ''}>Kargoda</option>
+                                <option value="teslim_edildi" ${order.durum === 'teslim_edildi' ? 'selected' : ''}>Teslim Edildi</option>
+                                <option value="iptal_edildi" ${order.durum === 'iptal_edildi' ? 'selected' : ''}>İptal Edildi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-success w-100" onclick="saveOrderStatus(${order.id})">
+                                <i class="fas fa-save"></i> Güncelle
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
                 ${order.siparis_notu ? `
-                    <div style="margin-top: 1.5rem;">
-                        <h4>Sipariş Notu</h4>
-                        <p>${order.siparis_notu}</p>
+                    <div class="order-detail-section">
+                        <h5><i class="fas fa-comment"></i> Sipariş Notu</h5>
+                        <div class="alert alert-info">${order.siparis_notu}</div>
                     </div>
                 ` : ''}
                 
                 ${order.admin_notu ? `
-                    <div style="margin-top: 1.5rem;">
-                        <h4>Admin Notu</h4>
-                        <p>${order.admin_notu}</p>
+                    <div class="order-detail-section">
+                        <h5><i class="fas fa-sticky-note"></i> Admin Notu</h5>
+                        <div class="alert alert-warning">${order.admin_notu}</div>
                     </div>
                 ` : ''}
             `;
         }
         
+        // Hızlı durum güncelleme
+        async function quickUpdateStatus(id) {
+            const statusOptions = {
+                '1': { value: 'beklemede', text: 'Beklemede' },
+                '2': { value: 'onaylandi', text: 'Onaylandı' },
+                '3': { value: 'hazirlaniyor', text: 'Hazırlanıyor' },
+                '4': { value: 'kargoda', text: 'Kargoda' },
+                '5': { value: 'teslim_edildi', text: 'Teslim Edildi' },
+                '6': { value: 'iptal_edildi', text: 'İptal Edildi' }
+            };
+            
+            let optionsList = '';
+            for (let key in statusOptions) {
+                optionsList += `${key} - ${statusOptions[key].text}\n`;
+            }
+            
+            const newStatus = prompt(`Yeni durum seçin (1-6):\n${optionsList}Sayı giriniz:`);
+            
+            if (statusOptions[newStatus]) {
+                await updateOrderStatus(id, statusOptions[newStatus].value);
+            }
+        }
+        
         // Sipariş durumunu güncelle
         async function saveOrderStatus(orderId) {
             const newStatus = document.getElementById('new-status').value;
-            
+            await updateOrderStatus(orderId, newStatus);
+        }
+        
+        // Sipariş durumu güncelleme
+        async function updateOrderStatus(orderId, newStatus) {
             try {
                 const response = await fetch(`../backend/api/siparisler.php/${orderId}`, {
                     method: 'PUT',
@@ -832,87 +1100,64 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Sipariş durumu güncellendi', 'success');
-                    closeModal();
+                    showToast('Sipariş durumu güncellendi', 'success');
                     loadOrders(currentPage);
+                    loadStats();
+                    
+                    // Modal açıksa kapat
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('orderModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
                 } else {
-                    showAlert(data.message || 'Durum güncellenemedi', 'error');
+                    showToast(data.message || 'Durum güncellenemedi', 'error');
                 }
                 
             } catch (error) {
                 console.error('Durum güncellenemedi:', error);
-                showAlert('Durum güncellenirken hata oluştu', 'error');
+                showToast('Durum güncellenirken hata oluştu', 'error');
             }
         }
         
-        // Sipariş durumu güncelleme kısayolu
-        async function updateOrderStatus(id) {
-            // Basit prompt ile durum güncelleme
-            const newStatus = prompt(`
-Yeni durum seçin:
-1 - Beklemede
-2 - Onaylandı  
-3 - Hazırlanıyor
-4 - Kargoda
-5 - Teslim Edildi
-6 - İptal Edildi
-
-Sayı giriniz (1-6):`);
+        // Toast mesajı göster
+        function showToast(message, type = 'info') {
+            const container = document.querySelector('.toast-container');
+            const toast = document.createElement('div');
             
-            const statusMap = {
-                '1': 'beklemede',
-                '2': 'onaylandi', 
-                '3': 'hazirlaniyor',
-                '4': 'kargoda',
-                '5': 'teslim_edildi',
-                '6': 'iptal_edildi'
-            };
+            const bgClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
             
-            if (statusMap[newStatus]) {
-                try {
-                    const response = await fetch(`../backend/api/siparisler.php/${id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            durum: statusMap[newStatus]
-                        })
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        showAlert('Sipariş durumu güncellendi', 'success');
-                        loadOrders(currentPage);
-                    } else {
-                        showAlert(data.message || 'Durum güncellenemedi', 'error');
-                    }
-                    
-                } catch (error) {
-                    console.error('Durum güncellenemedi:', error);
-                    showAlert('Durum güncellenirken hata oluştu', 'error');
-                }
-            }
-        }
-        
-        // Modal kapat
-        function closeModal() {
-            document.getElementById('order-modal').classList.remove('active');
-        }
-        
-        // Alert göster
-        function showAlert(message, type) {
-            const container = document.getElementById('alert-container');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
+            toast.className = `toast ${bgClass}`;
+            toast.innerHTML = `
+                <div class="d-flex align-items-center p-3">
+                    <div class="me-auto">
+                        <div class="fw-bold">${type === 'success' ? 'Başarılı' : type === 'error' ? 'Hata' : 'Bilgi'}</div>
+                        <div class="text-muted">${message}</div>
+                    </div>
+                    <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
             
-            container.appendChild(alert);
+            container.appendChild(toast);
             
+            // Otomatik kaldır
             setTimeout(() => {
-                container.removeChild(alert);
+                if (toast.parentElement) {
+                    toast.remove();
+                }
             }, 5000);
+        }
+        
+        // Debounce fonksiyonu
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
     </script>
 </body>

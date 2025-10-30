@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gürbüz Oyuncak | Ana Sayfa</title>
+    <link rel="stylesheet" href="css/countdown-timer.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+
+        /* Top Bar */
+        .top-bar { background: #C62828; color: white; padding: 0.5rem 0; font-size: 0.875rem; }
+        .top-bar .container { display: flex; justify-content: space-between; align-items: center; }
+        .top-bar .contact-info { display: flex; gap: 2rem; }
+        .top-bar .user-actions { display: flex; gap: 1rem; }
+
+        /* Header */
+        .header { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header .container { display: flex; justify-content: space-between; align-items: center; padding: 1rem; }
+        .logo { font-size: 1.75rem; font-weight: bold; color: #1E88E5; }
+        .search-box { flex: 1; max-width: 400px; margin: 0 2rem; position: relative; }
+        .search-box input { width: 100%; padding: 0.75rem 1rem; border: 2px solid #E5E7EB; border-radius: 25px; }
+        .search-box button { position: absolute; right: 5px; top: 5px; background: #1E88E5; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; }
+        .header-actions { display: flex; align-items: center; gap: 1.5rem; }
+        .support-info { color: #6B7280; font-size: 0.875rem; }
+        .icon-button { background: none; border: none; font-size: 1.5rem; cursor: pointer; padding: 0.5rem; }
+
+        /* Navigation */
+        .nav { background: #1E88E5; color: white; }
+        .nav .container { display: flex; align-items: center; justify-content: space-between; }
+        .nav-menu { display: flex; list-style: none; gap: 2rem; }
+        .nav-menu a { color: white; text-decoration: none; padding: 1rem 0; }
+        .super-deals { background: #C62828; padding: 0.5rem 1rem; border-radius: 4px; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Hero Section */
+        .hero { background: linear-gradient(135deg, #1E88E5, #00BFA5); color: white; padding: 4rem 0; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.2)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.3)"/><circle cx="60" cy="70" r="1" fill="rgba(255,255,255,0.2)"/></svg>') repeat; }
+        .hero .container { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 3rem; position: relative; z-index: 1; }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; line-height: 1.2; }
+        .hero p { font-size: 1.125rem; margin-bottom: 2rem; opacity: 0.9; }
+        .hero .cta-button { background: #C62828; color: white; padding: 1rem 2rem; border: none; border-radius: 50px; font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .hero .cta-button:hover { background: #B71C1C; transform: translateY(-2px); }
+        .hero-visual { text-align: center; font-size: 8rem; opacity: 0.2; }
+
+        /* Countdown Banner Section */
+        .countdown-banner-section {
+            padding: 2rem 0;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        }
+        
+        .countdown-banner {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            padding: 2rem;
+            margin: 1rem 0;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(255, 107, 53, 0.25);
+            position: relative;
+            overflow: hidden;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .countdown-banner::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        .countdown-banner .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        
+        .countdown-banner .banner-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .countdown-banner .banner-text {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+        
+        .countdown-banner .banner-button {
+            background: white;
+            color: #FF6B35;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .countdown-banner .banner-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            background: #f8f8f8;
+        }
+        
+        /* Product Card Countdown Integration */
+        .product-card .countdown-wrapper {
+            margin: 1rem 0;
+        }
+        
+        .product-card.has-countdown .product-price {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Feature Boxes */
+        .features { background: white; padding: 2rem 0; margin-top: -2rem; position: relative; z-index: 2; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+        .feature-box { text-align: center; padding: 2rem 1rem; border-radius: 8px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .feature-title { font-weight: 600; margin-bottom: 0.5rem; color: #374151; }
+        .feature-desc { color: #6B7280; font-size: 0.875rem; }
+
+        /* Category Sections */
+        .category-section { padding: 3rem 0; }
+        .section-header { text-align: center; margin-bottom: 3rem; }
+        .section-title { font-size: 2.5rem; font-weight: bold; color: #374151; margin-bottom: 0.5rem; }
+        .section-subtitle { color: #6B7280; font-size: 1.125rem; }
+
+        .categories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+        .category-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
+        .category-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+        .category-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .category-name { font-weight: 600; color: #374151; }
+
+        /* Age Groups */
+        .age-groups { background: #f0f9ff; padding: 3rem 0; }
+        .age-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
+        .age-card { background: white; border-radius: 50%; padding: 2rem 1rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
+        .age-card:hover { transform: scale(1.05); }
+        .age-0-3 { background: #00BFA5; color: white; }
+        .age-4-7 { background: #E91E63; color: white; }
+        .age-8-plus { background: #FF9800; color: white; }
+
+        /* Products Section */
+        .products-section { padding: 3rem 0; background: white; }
+        .products-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+        .product-image { width: 100%; height: 250px; object-fit: cover; background: #f5f5f5; }
+        .product-info { padding: 1.5rem; }
+        .product-category { color: #6B7280; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .product-name { font-weight: 600; margin-bottom: 1rem; color: #374151; line-height: 1.4; }
+        .product-rating { color: #FFB300; margin-bottom: 1rem; }
+        .product-price { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+        .current-price { font-size: 1.5rem; font-weight: bold; color: #1E88E5; }
+        .original-price { color: #9CA3AF; text-decoration: line-through; }
+        .product-actions { display: flex; gap: 0.5rem; }
+        .btn-add { flex: 1; background: #1E88E5; color: white; border: none; padding: 0.75rem; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-add:hover { background: #1565C0; }
+        .btn-wishlist { background: none; border: 1px solid #D1D5DB; padding: 0.75rem; border-radius: 6px; cursor: pointer; }
+
+        /* Special Sections */
+        .special-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 3rem 0; }
+        .special-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .special-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #374151; }
+        .special-item { display: flex; gap: 1rem; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; }
+        .special-item:hover { background: #f9fafb; }
+
+        /* Footer */
+        .footer { background: #374151; color: white; padding: 3rem 0 1rem; margin-top: 3rem; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .footer-section h3 { margin-bottom: 1rem; color: #1E88E5; }
+        .footer-section ul { list-style: none; }
+        .footer-section ul li { margin-bottom: 0.5rem; }
+        .footer-section ul li a { color: #D1D5DB; text-decoration: none; }
+        .footer-section ul li a:hover { color: white; }
+        .footer-bottom { border-top: 1px solid #4B5563; padding-top: 1rem; text-align: center; color: #9CA3AF; }
+
+        .loading { text-align: center; padding: 3rem; color: #6B7280; }
+        .error { text-align: center; padding: 3rem; color: #C62828; }
+
+        @media (max-width: 768px) {
+            .header .container { flex-direction: column; gap: 1rem; }
+            .search-box { order: 3; margin: 0; max-width: none; }
+            .hero .container { grid-template-columns: 1fr; text-align: center; }
+            .hero h1 { font-size: 2rem; }
+            .special-sections { grid-template-columns: 1fr; }
+            .top-bar .container { flex-direction: column; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="contact-info">
+                <span>📧 info@gurbuzoyuncak.com</span>
+                <span>📞 7/24 Destek: +90 555 000 0000</span>
+                <span>🏠 6391 Elgin St. Celina, Antalya</span>
+            </div>
+            <div class="user-actions">
+                <span>Giriş Yap | Yardım</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">Gürbüz Oyuncak</div>
+            <div class="search-box">
+                <input type="text" placeholder="Ürün ara..." id="searchInput">
+                <button onclick="searchProducts()">🔍</button>
+            </div>
+            <div class="header-actions">
+                <div class="support-info">
+                    <div>7/24 Destek:</div>
+                    <div style="font-weight: bold;">+90 555 000 0000</div>
+                </div>
+                <button class="icon-button">❤️</button>
+                <button class="icon-button" onclick="toggleCart()">🛒 <span id="cart-count">0</span></button>
+                <button class="icon-button">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <ul class="nav-menu">
+                <li><a href="/">Ana Sayfa</a></li>
+                <li><a href="/public/products.html">Ürünler</a></li>
+                <li><a href="/public/about.html">Hakkımızda</a></li>
+                <li><a href="/public/contact.html">İletişim</a></li>
+            </ul>
+            <div class="super-deals">
+                🚀 Özel Fırsatlar
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Çocuğunuz İçin En İyi Oyuncakları Keşfedin</h1>
+                <p>Kaliteli, güvenli ve eğlenceli oyuncaklarla çocuklarınızın hayal dünyasını zenginleştirin. Ücretsiz kargo ile 20 TL üzeri siparişlerde!</p>
+                <button class="cta-button" onclick="goToProducts()">🛍️ Hemen Alışverişe Başla</button>
+            </div>
+            <div class="hero-visual">
+                🧸
+            </div>
+        </div>
+    </section>
+
+    <!-- Countdown Banner Section -->
+    <section id="countdown-banner-section" class="countdown-banner-section" style="display: none;">
+        <div class="container">
+            <div id="countdown-banners-container">
+                <!-- Countdown banners dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Boxes -->
+    <section class="features">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-title">Para İadesi</div>
+                    <div class="feature-desc">7 gün içinde koşulsuz para iadesi garantisi</div>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Üyelik İndirimi</div>
+                    <div class="feature-desc">2000 TL üzeri tüm siparişlerde özel indirim</div>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">🚚</div>
+                    <div class="feature-title">Ücretsiz Kargo</div>
+                    <div class="feature-desc">20 TL ve üzeri tüm siparişlerde ücretsiz teslimat</div>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">🛟</div>
+                    <div class="feature-title">7/24 Destek</div>
+                    <div class="feature-desc">Uzman müşteri hizmetleri her zaman hizmetinizde</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="category-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Kategorilere Göre Alışveriş</h2>
+                <p class="section-subtitle">Çocuğunuzun yaşına ve ilgi alanına uygun kategorileri keşfedin</p>
+            </div>
+            <div class="categories-grid" id="categoriesGrid">
+                <div class="loading">Kategoriler yükleniyor...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Age Groups Section -->
+    <section class="age-groups">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Yaşa Göre Alışveriş</h2>
+                <p class="section-subtitle">Çocuğunuzun yaşına uygun oyuncakları hemen bulun</p>
+            </div>
+            <div class="age-grid">
+                <div class="age-card age-0-3" onclick="filterByAge(1)">
+                    <h3>0-3 Yaş</h3>
+                    <p>🧸 Bebek Oyuncakları</p>
+                </div>
+                <div class="age-card age-4-7" onclick="filterByAge(2)">
+                    <h3>4-7 Yaş</h3>
+                    <p>🏃 Okul Öncesi</p>
+                </div>
+                <div class="age-card age-8-plus" onclick="filterByAge(3)">
+                    <h3>8+ Yaş</h3>
+                    <p>🎮 İleri Yaş</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section">
+        <div class="container">
+            <div class="products-header">
+                <div>
+                    <h2 class="section-title">Popüler Oyuncaklar</h2>
+                    <p class="section-subtitle">En çok tercih edilen ve sevilen oyuncaklar</p>
+                </div>
+                <button class="btn-add" onclick="goToProducts()">Tümünü Gör →</button>
+            </div>
+            <div id="productsGrid" class="products-grid">
+                <div class="loading">Ürünler yükleniyor...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Special Sections -->
+    <section class="special-sections">
+        <div class="container">
+            <div class="special-card">
+                <h3 class="special-title">🎯 Özel Ürünler</h3>
+                <div id="specialProducts">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+            <div class="special-card">
+                <h3 class="special-title">🔥 Sıcak Fırsatlar</h3>
+                <div id="hotDeals">
+                    <div class="loading">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>🧸 Gürbüz Oyuncak</h3>
+                    <p>Çocuklarınızın mutluluğu ve güvenliği için kaliteli oyuncaklar sunuyoruz. 1990'dan beri hizmetinizdeyiz.</p>
+                    <p><strong>Adres:</strong> 6391 Elgin St. Celina, Antalya<br>
+                    <strong>Telefon:</strong> +90 555 000 0000<br>
+                    <strong>E-posta:</strong> info@gurbuzoyuncak.com</p>
+                </div>
+                <div class="footer-section">
+                    <h3>🚀 Hizmetlerimiz</h3>
+                    <ul>
+                        <li><a href="#">Hizmet Teklifleri</a></li>
+                        <li><a href="#">Nasıl Çalışır</a></li>
+                        <li><a href="#">Fiyat Listesi</a></li>
+                        <li><a href="#">Hizmet Alanları</a></li>
+                        <li><a href="#">Sık Sorulan Sorular</a></li>
+                        <li><a href="#">İletişim Bilgileri</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>👥 Müşteri Desteği</h3>
+                    <ul>
+                        <li><a href="#">İletişime Geçin</a></li>
+                        <li><a href="#">Mağaza Listesi</a></li>
+                        <li><a href="#">Çalışma Saatleri</a></li>
+                        <li><a href="#">İade & Değişim</a></li>
+                        <li><a href="#">Gizlilik Politikası</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>📧 Bültenimize Abone Olun</h3>
+                    <p>Bültenimizle hiçbir önemli güncellemeyi kaçırmayın.</p>
+                    <div style="display: flex; margin-top: 1rem;">
+                        <input type="email" placeholder="E-posta adresiniz" style="flex: 1; padding: 0.5rem; border: 1px solid #4B5563; background: #374151; color: white; border-radius: 4px 0 0 4px;">
+                        <button style="padding: 0.5rem 1rem; background: #1E88E5; color: white; border: none; border-radius: 0 4px 4px 0;">📤</button>
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; gap: 1rem; font-size: 1.5rem;">
+                        <a href="#" style="color: #9CA3AF;">𝕏</a>
+                        <a href="#" style="color: #9CA3AF;">💼</a>
+                        <a href="#" style="color: #9CA3AF;">📷</a>
+                        <a href="#" style="color: #9CA3AF;">📌</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Gürbüz Oyuncak. Tüm hakları saklıdır. | MiniMax Agent ile geliştirildi</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sepet fonksiyonları
+        function toggleCart() {
+            alert('Sepet sayfasına yönlendiriliyor...');
+            window.location.href = '/public/cart.html';
+        }
+
+        function goToProducts() {
+            window.location.href = '/public/products.html';
+        }
+
+        function searchProducts() {
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) {
+                window.location.href = `/public/products.html?search=${encodeURIComponent(query)}`;
+            }
+        }
+
+        function filterByAge(ageGroup) {
+            window.location.href = `/public/products.html?age_group=${ageGroup}`;
+        }
+
+        function addToCart(productId) {
+            // Mevcut sepeti al
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            
+            // Ürünü sepete ekle
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id: productId, quantity: 1 });
+            }
+            
+            // Sepeti kaydet
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Sepet sayısını güncelle
+            updateCartCount();
+            
+            alert('Ürün sepete eklendi!');
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-count').textContent = count;
+        }
+
+        // Kategorileri yükle
+        async function loadCategories() {
+            try {
+                const response = await fetch('/backend/api/kategoriler.php');
+                const data = await response.json();
+                
+                const grid = document.getElementById('categoriesGrid');
+                
+                if (data.success && data.data.length > 0) {
+                    // İlk 6 kategoriyi göster
+                    const categories = data.data.slice(0, 6);
+                    grid.innerHTML = categories.map(category => `
+                        <div class="category-card" onclick="filterByCategory(${category.id})">
+                            <div class="category-icon">${getCategoryIcon(category.kategori_adi)}</div>
+                            <div class="category-name">${category.kategori_adi}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = `
+                        <div class="category-card">
+                            <div class="category-icon">🧸</div>
+                            <div class="category-name">Bebek & Aksesuarları</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon">🧩</div>
+                            <div class="category-name">Puzzle & Yapboz</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon">🚁</div>
+                            <div class="category-name">Kumandalılar</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon">🚗</div>
+                            <div class="category-name">Araçlar</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon">🏕️</div>
+                            <div class="category-name">Oyun Setleri</div>
+                        </div>
+                        <div class="category-card">
+                            <div class="category-icon">🌳</div>
+                            <div class="category-name">Outdoor & Bahçe</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Kategoriler yüklenirken hata:', error);
+            }
+        }
+
+        function getCategoryIcon(categoryName) {
+            const icons = {
+                'oyuncak': '🧸',
+                'bebek': '👶',
+                'puzzle': '🧩',
+                'kumandalı': '🚁',
+                'araç': '🚗',
+                'oyun': '🎮',
+                'outdoor': '🌳',
+                'figür': '🦸',
+                'eğitici': '📚',
+                'peluş': '🧸'
+            };
+            
+            const lowerName = categoryName.toLowerCase();
+            for (const [key, icon] of Object.entries(icons)) {
+                if (lowerName.includes(key)) {
+                    return icon;
+                }
+            }
+            return '🎯';
+        }
+
+        function filterByCategory(categoryId) {
+            window.location.href = `/public/products.html?category=${categoryId}`;
+        }
+
+        // Ürünleri yükle
+        async function loadProducts() {
+            try {
+                const response = await fetch('/backend/api/urunler.php?limit=8&vitrin_urunu=1');
+                const data = await response.json();
+                
+                const grid = document.getElementById('productsGrid');
+                
+                if (data.success && data.data.length > 0) {
+                    grid.innerHTML = data.data.map(product => `
+                        <div class="product-card">
+                            <img src="${product.ana_gorsel || '/public/images/no-image.png'}" 
+                                 alt="${product.urun_adi}" 
+                                 class="product-image"
+                                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect width=%22200%22 height=%22200%22 fill=%22%23f5f5f5%22/><text x=%22100%22 y=%22100%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22>🧸</text></svg>'">
+                            <div class="product-info">
+                                <div class="product-category">${product.kategori_adi || 'Oyuncak'}</div>
+                                <div class="product-name">${product.urun_adi}</div>
+                                <div class="product-rating">⭐⭐⭐⭐⭐ (5.00)</div>
+                                <div class="product-price">
+                                    <span class="current-price">${product.fiyat} ₺</span>
+                                    ${product.kampanya_fiyati ? `<span class="original-price">${product.kampanya_fiyat} ₺</span>` : ''}
+                                </div>
+                                <div class="product-actions">
+                                    <button class="btn-add" onclick="addToCart(${product.id})">🛒 Sepete Ekle</button>
+                                    <button class="btn-wishlist">❤️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = `
+                        <div class="product-card">
+                            <img src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect width=%22200%22 height=%22200%22 fill=%22%23f5f5f5%22/><text x=%22100%22 y=%22100%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22>🧸</text></svg>" class="product-image">
+                            <div class="product-info">
+                                <div class="product-category">Demo Ürün</div>
+                                <div class="product-name">Gürbüz Oyuncak Demo Ürünü</div>
+                                <div class="product-rating">⭐⭐⭐⭐⭐ (5.00)</div>
+                                <div class="product-price">
+                                    <span class="current-price">25.99 ₺</span>
+                                </div>
+                                <div class="product-actions">
+                                    <button class="btn-add">🛒 Sepete Ekle</button>
+                                    <button class="btn-wishlist">❤️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Ürünler yüklenirken hata:', error);
+                document.getElementById('productsGrid').innerHTML = 
+                    '<div class="error">Ürünler yüklenirken bir hata oluştu. XML import yaparak ürün ekleyebilirsiniz.</div>';
+            }
+        }
+
+        // Özel ürünleri yükle
+        async function loadSpecialProducts() {
+            try {
+                const response = await fetch('/backend/api/urunler.php?limit=3&vitrin_urunu=1');
+                const data = await response.json();
+                
+                const container = document.getElementById('specialProducts');
+                
+                if (data.success && data.data.length > 0) {
+                    container.innerHTML = data.data.map(product => `
+                        <div class="special-item">
+                                    <img src="${product.ana_gorsel || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect width=%22200%22 height=%22200%22 fill=%22%23f5f5f5%22/><text x=%22100%22 y=%22100%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22>🧸</text></svg>'}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <div style="font-weight: 600;">${product.urun_adi}</div>
+                                <div style="color: #1E88E5; font-weight: bold;">${product.fiyat} ₺</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="special-item">
+                            <div style="width: 60px; height: 60px; background: #f5f5f5; border-radius: 8px;"></div>
+                            <div>
+                                <div style="font-weight: 600;">Demo Ürün</div>
+                                <div style="color: #1E88E5; font-weight: bold;">25.99 ₺</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Özel ürünler yüklenirken hata:', error);
+            }
+        }
+
+        // Sıcak fırsatları yükle
+        async function loadHotDeals() {
+            try {
+                const response = await fetch('/backend/api/urunler.php?limit=3&kampanyali=1');
+                const data = await response.json();
+                
+                const container = document.getElementById('hotDeals');
+                
+                if (data.success && data.data.length > 0) {
+                    container.innerHTML = data.data.map(product => `
+                        <div class="special-item">
+                                    <img src="${product.ana_gorsel || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect width=%22200%22 height=%22200%22 fill=%22%23f5f5f5%22/><text x=%22100%22 y=%22100%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22>🧸</text></svg>'}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <div style="font-weight: 600;">${product.urun_adi}</div>
+                                <div style="color: #C62828; font-weight: bold;">${product.fiyat} ₺</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="special-item">
+                            <div style="width: 60px; height: 60px; background: #f5f5f5; border-radius: 8px;"></div>
+                            <div>
+                                <div style="font-weight: 600;">Demo Fırsat Ürünü</div>
+                                <div style="color: #C62828; font-weight: bold;">19.99 ₺</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Sıcak fırsatlar yüklenirken hata:', error);
+            }
+        }
+
+        // Countdown Banner'ları yükle
+        async function loadCountdownBanners() {
+            try {
+                const response = await fetch('/backend/api/homepage_sections.php?action=get_countdown_banners');
+                const data = await response.json();
+                
+                if (data.success && data.banners && data.banners.length > 0) {
+                    const container = document.getElementById('countdown-banners-container');
+                    const section = document.getElementById('countdown-banner-section');
+                    
+                    container.innerHTML = data.banners.map(banner => `
+                        <div class="countdown-banner">
+                            <div class="banner-content">
+                                <h2 class="banner-title">${banner.title}</h2>
+                                <p class="banner-text">${banner.banner_text}</p>
+                                <div data-countdown-banner 
+                                     data-countdown-end="${banner.end_date}"
+                                     data-banner-id="${banner.id}"
+                                     data-banner-title="${banner.title}"
+                                     data-banner-text="${banner.banner_text}">
+                                </div>
+                                ${banner.banner_button_text && banner.banner_button_url ? 
+                                    `<a href="${banner.banner_button_url}" class="banner-button">${banner.banner_button_text}</a>` : 
+                                    ''
+                                }
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    section.style.display = 'block';
+                } else {
+                    document.getElementById('countdown-banner-section').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Countdown banner yüklenirken hata:', error);
+                document.getElementById('countdown-banner-section').style.display = 'none';
+            }
+        }
+
+        // Ürün kartlarına countdown timer ekle
+        function addProductCountdowns() {
+            const productCards = document.querySelectorAll('.product-card');
+            
+            productCards.forEach(async (card) => {
+                const productId = card.dataset.productId;
+                if (!productId) return;
+                
+                try {
+                    const response = await fetch(`/backend/api/campaigns.php?action=get_product_timed_discount&product_id=${productId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.campaign) {
+                        const campaign = data.campaign;
+                        const productInfo = card.querySelector('.product-info');
+                        
+                        // Countdown timer container oluştur
+                        const countdownContainer = document.createElement('div');
+                        countdownContainer.className = 'countdown-wrapper';
+                        countdownContainer.innerHTML = `
+                            <div data-countdown-product 
+                                 data-countdown-end="${campaign.end_date}"
+                                 data-campaign-id="${campaign.id}"
+                                 data-discount-type="${campaign.discount_type}"
+                                 data-discount-value="${campaign.discount_value}">
+                            </div>
+                        `;
+                        
+                        // Product card'a countdown class ekle
+                        card.classList.add('has-countdown');
+                        
+                        // Price section'dan önce ekle
+                        const priceSection = card.querySelector('.product-price');
+                        if (priceSection) {
+                            priceSection.parentNode.insertBefore(countdownContainer, priceSection);
+                        } else {
+                            productInfo.appendChild(countdownContainer);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ürün countdown yüklenirken hata:', error);
+                }
+            });
+        }
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            loadCategories();
+            loadProducts();
+            loadSpecialProducts();
+            loadHotDeals();
+            
+            // Countdown sistemini başlat
+            loadCountdownBanners();
+            
+            // Ürünler yüklendikten sonra countdown'ları ekle
+            setTimeout(() => {
+                addProductCountdowns();
+            }, 1000);
+        });
+    </script>
+    <script src="js/countdown-timer.js"></script>
+</body>
+</html>

@@ -42,6 +42,22 @@ switch ($method) {
                 echo json_encode(['success' => false, 'message' => 'Ürün bulunamadı']);
             }
         } else {
+            // Stats endpoint'i kontrol et
+            if (isset($_GET['stats']) && $_GET['stats'] === 'true') {
+                $stats = [
+                    'total' => $urun->getTotalCount(),
+                    'active' => $urun->getActiveCount(),
+                    'lowStock' => $urun->getLowStockCount(),
+                    'newProducts' => $urun->getNewProductsCount()
+                ];
+                
+                echo json_encode([
+                    'success' => true,
+                    'stats' => $stats
+                ]);
+                break;
+            }
+            
             // Tüm ürünleri getir
             $filtreler = [
                 'kategori_id' => $_GET['kategori_id'] ?? null,
@@ -53,16 +69,30 @@ switch ($method) {
                 'min_fiyat' => $_GET['min_fiyat'] ?? null,
                 'max_fiyat' => $_GET['max_fiyat'] ?? null,
                 'siralama' => $_GET['siralama'] ?? 'yeni',
-                'limit' => $_GET['limit'] ?? null
+                'limit' => $_GET['limit'] ?? null,
+                'aktif' => $_GET['aktif'] ?? null,
+                'stok_filtre' => $_GET['stok_filtre'] ?? null
             ];
             
             $stmt = $urun->tumunuGetir($filtreler);
             $urunler = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
+            // Sayfalama hesapla
+            $totalCount = $urun->getTotalCount($filtreler);
+            $limit = $filtreler['limit'] ?? 20;
+            $offset = $_GET['offset'] ?? 0;
+            $totalPages = ceil($totalCount / $limit);
+            
             echo json_encode([
                 'success' => true,
                 'data' => $urunler,
-                'count' => count($urunler)
+                'count' => count($urunler),
+                'pagination' => [
+                    'total_items' => $totalCount,
+                    'total_pages' => $totalPages,
+                    'current_page' => floor($offset / $limit) + 1,
+                    'items_per_page' => $limit
+                ]
             ]);
         }
         break;

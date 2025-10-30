@@ -1,0 +1,103 @@
+{
+  "name": "Gürbüz Oyuncak B2B",
+  "short_name": "Gürbüz B2B",
+  "description": "Antalya merkezli oyuncak toptancısı - B2B E-Ticaret Platformu",
+  "start_url": "/public/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1E88E5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/public/images/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/images/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/images/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/images/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/images/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/images/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public/images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "shopping"],
+  "shortcuts": [
+    {
+      "name": "Ürünler",
+      "short_name": "Ürünler",
+      "description": "Ürün listesine git",
+      "url": "/public/products.html",
+      "icons": [{ "src": "/public/images/shortcut-products.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Sepetim",
+      "short_name": "Sepet",
+      "description": "Sepetime git",
+      "url": "/public/cart.html",
+      "icons": [{ "src": "/public/images/shortcut-cart.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Hesabım",
+      "short_name": "Hesap",
+      "description": "Hesabıma git",
+      "url": "/public/account.html",
+      "icons": [{ "src": "/public/images/shortcut-account.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/public/images/screenshot-1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Ana sayfa görünümü"
+    },
+    {
+      "src": "/public/images/screenshot-2.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "label": "Ürün listesi"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "lang": "tr-TR",
+  "dir": "ltr"
+}

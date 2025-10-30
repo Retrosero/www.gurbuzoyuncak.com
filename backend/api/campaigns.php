@@ -41,6 +41,56 @@ switch($method) {
             $campaigns = $campaign->getActiveCampaigns($customer_type);
             echo json_encode(['data' => $campaigns]);
             
+        } elseif (isset($_GET['action']) && $_GET['action'] == 'get_product_timed_discount') {
+            // Belirli ürün için timed discount kampanyası
+            $product_id = intval($_GET['product_id'] ?? 0);
+            if ($product_id > 0) {
+                $timed_campaign = $campaign->getProductTimedDiscount($product_id);
+                if ($timed_campaign) {
+                    echo json_encode([
+                        'success' => true,
+                        'campaign' => $timed_campaign
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Bu ürün için aktif timed discount kampanyası bulunamadı'
+                    ]);
+                }
+            } else {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Geçerli ürün ID gerekli']);
+            }
+            
+        } elseif (isset($_GET['action']) && $_GET['action'] == 'get_timed_discounts') {
+            // Tüm aktif timed discount kampanyaları
+            $product_id = isset($_GET['product_id']) ? intval($_GET['product_id']) : null;
+            $timed_campaigns = $campaign->getActiveTimedDiscounts($product_id);
+            echo json_encode([
+                'success' => true,
+                'campaigns' => $timed_campaigns,
+                'count' => count($timed_campaigns)
+            ]);
+            
+        } elseif (isset($_GET['action']) && $_GET['action'] == 'get_countdown_banners') {
+            // Countdown banner için kampanyalar
+            $banner_campaigns = $campaign->getCountdownBannerCampaigns();
+            echo json_encode([
+                'success' => true,
+                'campaigns' => $banner_campaigns,
+                'count' => count($banner_campaigns)
+            ]);
+            
+        } elseif (isset($_GET['action']) && $_GET['action'] == 'check_active') {
+            // Aktif kampanyaların güncellenip güncellenmediğini kontrol et
+            $last_check = $_GET['last_check'] ?? null;
+            // Bu basit bir version - production'da redis/cache kullanılabilir
+            echo json_encode([
+                'success' => true,
+                'updated' => false, // Şimdilik false, gerçek implementasyon'da kontrol edilecek
+                'timestamp' => time()
+            ]);
+            
         } elseif (isset($_GET['action']) && $_GET['action'] == 'applicable') {
             // Sepet için uygulanabilir kampanyalar
             $cart_total = floatval($_GET['cart_total'] ?? 0);

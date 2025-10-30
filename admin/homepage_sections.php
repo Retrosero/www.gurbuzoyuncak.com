@@ -1,5 +1,11 @@
 <?php
-// Basit auth kontrolü
+require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/../components/ComponentLoader.php';
+
+if (!isAdminLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -7,342 +13,353 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ana Sayfa Bölümleri | Gürbüz Oyuncak Admin</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/components/css/components.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --sidebar-width: 280px;
+            --topbar-height: 70px;
         }
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6;
+            background-color: #f8f9fc;
         }
         
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
+        .admin-wrapper {
+            display: flex;
             min-height: 100vh;
         }
         
         .main-content {
-            padding: 2rem;
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: calc(var(--topbar-height) + 2rem) 2rem 2rem;
         }
         
         .top-bar {
-            background-color: #FFFFFF;
-            padding: 1rem 2rem;
-            margin: -2rem -2rem 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .card {
-            background-color: #FFFFFF;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background-color: #1E88E5;
-            color: #FFFFFF;
-        }
-        
-        .btn-success {
-            background-color: #2E7D32;
-            color: #FFFFFF;
-        }
-        
-        .btn-danger {
-            background-color: #C62828;
-            color: #FFFFFF;
-        }
-        
-        .btn-secondary {
-            background-color: #6B7280;
-            color: #FFFFFF;
-        }
-        
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        table th,
-        table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        table th {
-            background-color: #F9FAFB;
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .badge-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-        }
-        
-        .badge-danger {
-            background-color: #FEE2E2;
-            color: #991B1B;
-        }
-        
-        .badge-info {
-            background-color: #DBEAFE;
-            color: #1E40AF;
-        }
-        
-        .modal {
-            display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: #FFFFFF;
-            margin: 5% auto;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-        }
-        
-        .action-buttons {
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--topbar-height);
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 999;
+        }
+        
+        .top-bar h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header-custom {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .btn-primary-gradient {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
             gap: 0.5rem;
         }
         
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: calc(var(--topbar-height) + 1rem) 1rem 1rem;
+            }
+            
+            .top-bar {
+                left: 0;
+                padding: 0 1rem;
+            }
+            
+            .top-bar h1 {
+                font-size: 1.25rem;
+            }
         }
-        
-        .product-item {
-            border: 1px solid #E5E7EB;
-            border-radius: 0.375rem;
-            padding: 0.5rem;
-            text-align: center;
-            position: relative;
-        }
-        
-        .product-item img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 0.25rem;
-        }
-        
-        .product-item .remove-btn {
-            position: absolute;
-            top: 0.25rem;
-            right: 0.25rem;
-            background-color: #C62828;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-        }
-        
-        .type-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-        
-        .type-populer { background-color: #FEE2E2; color: #991B1B; }
-        .type-yeni_gelenler { background-color: #DBEAFE; color: #1E40AF; }
-        .type-sectiklerimiz { background-color: #FEF3C7; color: #92400E; }
-        .type-indirimli { background-color: #D1FAE5; color: #065F46; }
     </style>
 </head>
 <body>
-    <div class="admin-layout">
-        <?php include 'includes/sidebar.php'; ?>
+    <div class="admin-wrapper">
+        <?php component('sidebar', ['variant' => 'admin']); ?>
         
         <div class="main-content">
             <div class="top-bar">
-                <h1>Ana Sayfa Bölümleri</h1>
-                <button class="btn btn-primary" onclick="openModal()">Yeni Bölüm Ekle</button>
+                <h1>
+                    <i data-lucide="layout-dashboard" style="width: 32px; height: 32px;"></i>
+                    Ana Sayfa Bölümleri
+                </h1>
+                <button class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#sectionModal" onclick="openModal()">
+                    <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                    Yeni Bölüm
+                </button>
             </div>
             
-            <div class="card">
-                <div class="card-header">
-                    <h2>Tüm Bölümler</h2>
+            <div class="section-card">
+                <div class="card-header-custom">
+                    <h3 class="m-0">Ana Sayfa Bölümleri</h3>
                 </div>
                 
-                <table id="sectionsTable">
-                    <thead>
-                        <tr>
-                            <th>Bölüm Türü</th>
-                            <th>Başlık</th>
-                            <th>Sıra</th>
-                            <th>Max Ürün</th>
-                            <th>Ürün Sayısı</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sectionsTableBody">
-                        <tr>
-                            <td colspan="7" style="text-align: center;">Yükleniyor...</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Başlık</th>
+                                <th>Tür</th>
+                                <th>Sıra</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sectionsTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <i data-lucide="loader-2" style="width: 32px; height: 32px; animation: spin 1s linear infinite;"></i>
+                                    <p class="mt-2">Yükleniyor...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Bölüm Modal -->
-    <div id="sectionModal" class="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle">Yeni Bölüm Ekle</h2>
-            <form id="sectionForm">
-                <input type="hidden" id="sectionId">
-                
-                <div class="form-group">
-                    <label>Bölüm Türü *</label>
-                    <select id="sectionType" required>
-                        <option value="populer">Popüler Ürünler</option>
-                        <option value="yeni_gelenler">Yeni Gelen Ürünler</option>
-                        <option value="sectiklerimiz">Bizim Seçtiklerimiz</option>
-                        <option value="indirimli">İndirimli Ürünler</option>
-                    </select>
+    <!-- Modal -->
+    <div class="modal fade" id="sectionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: var(--primary-gradient); color: white;">
+                    <h5 class="modal-title" id="modalTitle">Yeni Bölüm Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter: brightness(0) invert(1);"></button>
                 </div>
-                
-                <div class="form-group">
-                    <label>Başlık *</label>
-                    <input type="text" id="title" required>
+                <div class="modal-body">
+                    <form id="sectionForm">
+                        <input type="hidden" id="sectionId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Başlık *</label>
+                            <input type="text" class="form-control" id="title" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Alt Başlık</label>
+                            <input type="text" class="form-control" id="subtitle">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Bölüm Türü *</label>
+                                <select class="form-select" id="sectionType" required>
+                                    <option value="banner">Banner</option>
+                                    <option value="categories">Kategoriler</option>
+                                    <option value="products">Ürünler</option>
+                                    <option value="featured">Öne Çıkanlar</option>
+                                    <option value="campaigns">Kampanyalar</option>
+                                    <option value="brands">Markalar</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Sıra</label>
+                                <input type="number" class="form-control" id="displayOrder" value="0" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isActive" checked>
+                            <label class="form-check-label" for="isActive">Aktif</label>
+                        </div>
+                    </form>
                 </div>
-                
-                <div class="form-group">
-                    <label>Alt Başlık</label>
-                    <input type="text" id="subtitle">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary-gradient" onclick="saveSection()">Kaydet</button>
                 </div>
-                
-                <div class="form-group">
-                    <label>Gösterim Sırası</label>
-                    <input type="number" id="displayOrder" value="0" min="0">
-                </div>
-                
-                <div class="form-group">
-                    <label>Maksimum Ürün Sayısı</label>
-                    <input type="number" id="maxItems" value="8" min="1" max="24">
-                </div>
-                
-                <div class="form-group">
-                    <label>Arka Plan Rengi (opsiyonel)</label>
-                    <input type="color" id="backgroundColor">
-                </div>
-                
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="isActive" checked>
-                        Aktif
-                    </label>
-                </div>
-                
-                <div class="action-buttons">
-                    <button type="submit" class="btn btn-primary">Kaydet</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">İptal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <!-- Ürün Yönetim Modal -->
-    <div id="productsModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <h2 id="productsModalTitle">Bölüm Ürünleri</h2>
-            
-            <div class="form-group">
-                <label>Ürün Ekle</label>
-                <select id="productSelect" onchange="addProductToSection()">
-                    <option value="">Ürün seçin...</option>
-                </select>
-            </div>
-            
-            <div id="sectionProductsGrid" class="product-grid">
-                <!-- Ürünler buraya yüklenecek -->
-            </div>
-            
-            <div class="action-buttons" style="margin-top: 1rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeProductsModal()">Kapat</button>
             </div>
         </div>
     </div>
     
-    <script src="js/homepage_sections.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/components/js/component-loader.js"></script>
+    
+    <script>
+        lucide.createIcons();
+        
+        const API_BASE = '/backend/api/homepage_sections.php';
+        let bootstrap_modal;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            bootstrap_modal = new bootstrap.Modal(document.getElementById('sectionModal'));
+            loadSections();
+        });
+        
+        async function loadSections() {
+            try {
+                const response = await fetch(API_BASE);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySections(data.data);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        function displaySections(sections) {
+            const tbody = document.getElementById('sectionsTableBody');
+            
+            if (sections.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Bölüm bulunamadı</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = sections.map(section => `
+                <tr>
+                    <td><strong>${section.title}</strong><br><small class="text-muted">${section.subtitle || ''}</small></td>
+                    <td><span class="badge bg-info">${section.section_type}</span></td>
+                    <td><span class="badge bg-secondary">${section.display_order}</span></td>
+                    <td>
+                        <span class="badge ${section.is_active == 1 ? 'bg-success' : 'bg-danger'}">
+                            ${section.is_active == 1 ? 'Aktif' : 'Pasif'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-primary btn-sm" onclick="editSection(${section.id})">
+                                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteSection(${section.id})">
+                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+        
+        function openModal() {
+            document.getElementById('sectionForm').reset();
+            document.getElementById('sectionId').value = '';
+            document.getElementById('modalTitle').textContent = 'Yeni Bölüm Ekle';
+            document.getElementById('isActive').checked = true;
+        }
+        
+        async function saveSection() {
+            const sectionId = document.getElementById('sectionId').value;
+            
+            const sectionData = {
+                title: document.getElementById('title').value,
+                subtitle: document.getElementById('subtitle').value,
+                section_type: document.getElementById('sectionType').value,
+                display_order: document.getElementById('displayOrder').value,
+                is_active: document.getElementById('isActive').checked ? 1 : 0
+            };
+            
+            try {
+                const method = sectionId ? 'PUT' : 'POST';
+                const url = sectionId ? `${API_BASE}?id=${sectionId}` : API_BASE;
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sectionData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    bootstrap_modal.hide();
+                    loadSections();
+                    alert(sectionId ? 'Bölüm güncellendi' : 'Bölüm eklendi');
+                } else {
+                    alert('Hata: ' + (data.message || 'İşlem başarısız'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Bir hata oluştu');
+            }
+        }
+        
+        async function editSection(id) {
+            try {
+                const response = await fetch(`${API_BASE}?id=${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const section = data.data;
+                    
+                    document.getElementById('modalTitle').textContent = 'Bölüm Düzenle';
+                    document.getElementById('sectionId').value = section.id;
+                    document.getElementById('title').value = section.title;
+                    document.getElementById('subtitle').value = section.subtitle || '';
+                    document.getElementById('sectionType').value = section.section_type;
+                    document.getElementById('displayOrder').value = section.display_order;
+                    document.getElementById('isActive').checked = section.is_active == 1;
+                    
+                    bootstrap_modal.show();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        async function deleteSection(id) {
+            if (!confirm('Bu bölümü silmek istediğinize emin misiniz?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}?id=${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadSections();
+                    alert('Bölüm silindi');
+                } else {
+                    alert('Hata: ' + (data.message || 'Silme başarısız'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </body>
 </html>

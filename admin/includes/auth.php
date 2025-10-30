@@ -19,6 +19,23 @@ function checkAdminSession() {
     $_SESSION['last_activity'] = time();
 }
 
+// Admin giriş kontrolü (boolean döner)
+function isAdminLoggedIn() {
+    if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        return false;
+    }
+    
+    // Session timeout kontrolü (30 dakika)
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
+        session_unset();
+        session_destroy();
+        return false;
+    }
+    
+    $_SESSION['last_activity'] = time();
+    return true;
+}
+
 // CSRF token oluştur
 function generateCSRFToken() {
     if (!isset($_SESSION['csrf_token'])) {

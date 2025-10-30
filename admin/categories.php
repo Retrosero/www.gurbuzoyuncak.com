@@ -1,417 +1,204 @@
 <?php
-// Basit auth kontrolü (production'da session kullanılmalı)
-// session_start();
-// if (!isset($_SESSION['admin_logged_in'])) {
-//     header('Location: login.php');
-//     exit;
-// }
+/**
+ * Kategori Yönetimi
+ * Gürbüz Oyuncak E-Ticaret Sistemi
+ * Mobile Responsive & Modern Design
+ */
+
+session_start();
+require_once 'includes/auth.php';
+
+// Admin girişi zorunlu
+if (!isAdminLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kategori Yönetimi | Gürbüz Oyuncak Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#1E88E5">
+    
+    <title>Kategori Yönetimi | Admin Panel - Gürbüz Oyuncak</title>
+    
+    <!-- Bootstrap 5.3.2 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/admin/css/style.css">
+    <link rel="stylesheet" href="/components/css/components.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        body { background-color: #F8FAFC; padding-top: 70px; }
+        .main-content { margin-left: 0; padding: 2rem 0; }
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6;
-        }
-        
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
-        
-        .sidebar {
-            background-color: #1F2937;
-            color: #FFFFFF;
-            padding: 2rem 0;
-        }
-        
-        .sidebar-header {
-            padding: 0 1.5rem 2rem;
-            border-bottom: 1px solid #374151;
-        }
-        
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            color: #1E88E5;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            margin-top: 2rem;
-        }
-        
-        .sidebar-menu li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .sidebar-menu a {
-            display: block;
-            padding: 0.75rem 1.5rem;
-            color: #D1D5DB;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background-color: #374151;
-            color: #FFFFFF;
-            border-left: 3px solid #1E88E5;
-        }
-        
-        .main-content {
-            padding: 2rem;
-        }
-        
-        .top-bar {
-            background-color: #FFFFFF;
-            padding: 1rem 2rem;
-            margin: -2rem -2rem 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .card {
-            background-color: #FFFFFF;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .card-header h2 {
-            font-size: 1.25rem;
-            color: #1F2937;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            text-decoration: none;
-            font-size: 0.875rem;
-        }
-        
-        .btn-primary {
-            background-color: #1E88E5;
-            color: #FFFFFF;
-        }
-        
-        .btn-primary:hover {
-            background-color: #1565C0;
-        }
-        
-        .btn-danger {
-            background-color: #C62828;
-            color: #FFFFFF;
-            padding: 0.375rem 0.75rem;
-        }
-        
-        .btn-warning {
-            background-color: #F9A825;
-            color: #FFFFFF;
-            padding: 0.375rem 0.75rem;
-        }
-        
-        .btn-success {
-            background-color: #2E7D32;
-            color: #FFFFFF;
-        }
-        
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        thead {
-            background-color: #F9FAFB;
-        }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        th {
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.875rem;
-        }
-        
-        tbody tr:hover {
-            background-color: #F9FAFB;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .badge-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-        }
-        
-        .badge-danger {
-            background-color: #FEE2E2;
-            color: #991B1B;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-            font-size: 0.875rem;
-        }
-        
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-        }
-        
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background-color: #FFFFFF;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            max-width: 500px;
-            width: 90%;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .modal-header h3 {
-            font-size: 1.25rem;
-            color: #1F2937;
-        }
-        
-        .close {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #6B7280;
-            cursor: pointer;
-        }
-        
-        .close:hover {
-            color: #1F2937;
-        }
-        
-        .actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .alert {
-            padding: 1rem;
-            border-radius: 0.375rem;
-            margin-bottom: 1rem;
-        }
-        
-        .alert-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-            border: 1px solid #6EE7B7;
-        }
-        
-        .alert-error {
-            background-color: #FEE2E2;
-            color: #991B1B;
-            border: 1px solid #FCA5A5;
+        @media (min-width: 992px) {
+            .main-content { margin-left: 280px; }
         }
         
         .category-icon {
-            width: 40px;
-            height: 40px;
-            background-color: #E3F2FD;
-            border-radius: 0.5rem;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
         }
+        
+        .table-responsive { border-radius: 12px; overflow: hidden; }
     </style>
 </head>
 <body>
-    <div class="admin-layout">
-        <?php include 'includes/sidebar.php'; ?>
-        
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="top-bar">
-                <h1>Kategori Yönetimi</h1>
-                <button class="btn btn-primary" onclick="openModal('add')">
-                    + Yeni Kategori Ekle
-                </button>
+    <?php
+    // Component Loader
+    require_once __DIR__ . '/../components/ComponentLoader.php';
+    
+    // Navbar (admin variant)
+    component('navbar', ['variant' => 'admin']);
+    
+    // Sidebar (admin variant)
+    component('sidebar', ['variant' => 'admin']);
+    ?>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid px-3 px-md-4">
+            <!-- Başlık -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <h1 class="h3 mb-1">
+                                <i class="fas fa-folder-open text-primary me-2"></i>Kategori Yönetimi
+                            </h1>
+                            <p class="text-muted mb-0">Ürün kategorilerini yönetin</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" onclick="resetForm()">
+                                <i class="fas fa-plus me-2"></i>Yeni Kategori
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             
+            <!-- Alert Container -->
             <div id="alert-container"></div>
             
-            <!-- Categories Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Kategoriler</h2>
-                    <span id="category-count">Toplam: 0 kategori</span>
+            <!-- Kategoriler Tablosu -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Kategoriler</h5>
+                        <span class="badge bg-primary" id="category-count">Yükleniyor...</span>
+                    </div>
                 </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>İkon</th>
-                            <th>Kategori Adı</th>
-                            <th>Slug</th>
-                            <th>Açıklama</th>
-                            <th>Ürün Sayısı</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody id="categories-table">
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 2rem; color: #6B7280;">
-                                Yükleniyor...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>İkon</th>
+                                <th>Kategori Adı</th>
+                                <th>Slug</th>
+                                <th class="d-none d-md-table-cell">Açıklama</th>
+                                <th class="d-none d-lg-table-cell">Ürün Sayısı</th>
+                                <th>Durum</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categories-table">
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Yükleniyor...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
     
-    <!-- Add/Edit Category Modal -->
-    <div id="category-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Yeni Kategori Ekle</h3>
-                <span class="close" onclick="closeModal()">&times;</span>
+    <!-- Kategori Modal -->
+    <div class="modal fade" id="categoryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">Yeni Kategori Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="category-form" onsubmit="saveCategory(event)">
+                    <div class="modal-body">
+                        <input type="hidden" id="category-id">
+                        
+                        <div class="mb-3">
+                            <label for="category-name" class="form-label">Kategori Adı <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="category-name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category-slug" class="form-label">Slug <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="category-slug" required>
+                            <small class="form-text text-muted">URL'de kullanılacak (örn: bebekler-aksesuar)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category-description" class="form-label">Açıklama</label>
+                            <textarea class="form-control" id="category-description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="category-icon" class="form-label">İkon (Emoji)</label>
+                                <input type="text" class="form-control" id="category-icon" placeholder="🧸">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="category-order" class="form-label">Sıralama</label>
+                                <input type="number" class="form-control" id="category-order" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category-status" class="form-label">Durum</label>
+                            <select class="form-select" id="category-status">
+                                <option value="1">Aktif</option>
+                                <option value="0">Pasif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Kaydet
+                        </button>
+                    </div>
+                </form>
             </div>
-            
-            <form id="category-form" onsubmit="saveCategory(event)">
-                <input type="hidden" id="category-id">
-                
-                <div class="form-group">
-                    <label>Kategori Adı *</label>
-                    <input type="text" id="category-name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>Slug *</label>
-                    <input type="text" id="category-slug" required>
-                    <small style="color: #6B7280; font-size: 0.75rem;">
-                        URL'de kullanılacak (örn: bebekler-aksesuar)
-                    </small>
-                </div>
-                
-                <div class="form-group">
-                    <label>Açıklama</label>
-                    <textarea id="category-description"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>İkon (Emoji)</label>
-                    <input type="text" id="category-icon" placeholder="🧸">
-                    <small style="color: #6B7280; font-size: 0.75rem;">
-                        Kategoriyi temsil eden emoji girin
-                    </small>
-                </div>
-                
-                <div class="form-group">
-                    <label>Sıralama</label>
-                    <input type="number" id="category-order" value="0">
-                </div>
-                
-                <div class="form-group">
-                    <label>Durum</label>
-                    <select id="category-status">
-                        <option value="1">Aktif</option>
-                        <option value="0">Pasif</option>
-                    </select>
-                </div>
-                
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn btn-success" style="flex: 1;">
-                        Kaydet
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="closeModal()" style="flex: 1;">
-                        İptal
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Component Loader -->
+    <script src="/components/js/component-loader.js"></script>
     
     <script>
         // Sayfa yüklendiğinde
@@ -427,13 +214,16 @@
                 
                 const categories = data.data || [];
                 const tbody = document.getElementById('categories-table');
-                document.getElementById('category-count').textContent = `Toplam: ${categories.length} kategori`;
+                document.getElementById('category-count').textContent = `${categories.length} kategori`;
                 
                 if (categories.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 2rem; color: #6B7280;">
-                                Kategori bulunamadı
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>Henüz kategori eklenmemiş</p>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -447,51 +237,43 @@
                                 ${cat.icon || '📦'}
                             </div>
                         </td>
-                        <td><strong>${cat.name}</strong></td>
-                        <td><code>${cat.slug}</code></td>
-                        <td>${cat.description || '-'}</td>
-                        <td>${cat.product_count || 0}</td>
                         <td>
-                            <span class="badge ${cat.is_active ? 'badge-success' : 'badge-danger'}">
+                            <strong>${cat.name}</strong>
+                        </td>
+                        <td><code class="text-muted">${cat.slug}</code></td>
+                        <td class="d-none d-md-table-cell">
+                            <small class="text-muted">${cat.description || '-'}</small>
+                        </td>
+                        <td class="d-none d-lg-table-cell">
+                            <span class="badge bg-secondary">${cat.product_count || 0}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-${cat.is_active ? 'success' : 'danger'}">
                                 ${cat.is_active ? 'Aktif' : 'Pasif'}
                             </span>
                         </td>
-                        <td>
-                            <div class="actions">
-                                <button class="btn btn-warning btn-sm" onclick="editCategory(${cat.id})">
-                                    Düzenle
-                                </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteCategory(${cat.id})">
-                                    Sil
-                                </button>
-                            </div>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-warning" onclick="editCategory(${cat.id})" title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCategory(${cat.id})" title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </td>
                     </tr>
                 `).join('');
                 
             } catch (error) {
                 console.error('Kategoriler yüklenemedi:', error);
-                showAlert('Kategoriler yüklenirken hata oluştu', 'error');
+                showAlert('Kategoriler yüklenirken hata oluştu', 'danger');
             }
         }
         
-        // Modal aç
-        function openModal(mode) {
-            const modal = document.getElementById('category-modal');
-            const title = document.getElementById('modal-title');
-            
-            if (mode === 'add') {
-                title.textContent = 'Yeni Kategori Ekle';
-                document.getElementById('category-form').reset();
-                document.getElementById('category-id').value = '';
-            }
-            
-            modal.classList.add('active');
-        }
-        
-        // Modal kapat
-        function closeModal() {
-            document.getElementById('category-modal').classList.remove('active');
+        // Form sıfırla
+        function resetForm() {
+            document.getElementById('category-form').reset();
+            document.getElementById('category-id').value = '';
+            document.getElementById('modal-title').textContent = 'Yeni Kategori Ekle';
         }
         
         // Kategori düzenle
@@ -510,11 +292,11 @@
                 document.getElementById('category-order').value = category.display_order || 0;
                 document.getElementById('category-status').value = category.is_active ? '1' : '0';
                 
-                openModal('edit');
+                new bootstrap.Modal(document.getElementById('categoryModal')).show();
                 
             } catch (error) {
                 console.error('Kategori bilgileri yüklenemedi:', error);
-                showAlert('Kategori bilgileri yüklenirken hata oluştu', 'error');
+                showAlert('Kategori bilgileri yüklenirken hata oluştu', 'danger');
             }
         }
         
@@ -551,15 +333,15 @@
                 
                 if (result.success) {
                     showAlert(id ? 'Kategori başarıyla güncellendi' : 'Kategori başarıyla eklendi', 'success');
-                    closeModal();
+                    bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
                     loadCategories();
                 } else {
-                    showAlert(result.message || 'İşlem başarısız', 'error');
+                    showAlert(result.message || 'İşlem başarısız', 'danger');
                 }
                 
             } catch (error) {
                 console.error('Kategori kaydedilirken hata:', error);
-                showAlert('Kategori kaydedilirken hata oluştu', 'error');
+                showAlert('Kategori kaydedilirken hata oluştu', 'danger');
             }
         }
         
@@ -584,28 +366,33 @@
                     showAlert('Kategori başarıyla silindi', 'success');
                     loadCategories();
                 } else {
-                    showAlert(result.message || 'Silme işlemi başarısız', 'error');
+                    showAlert(result.message || 'Silme işlemi başarısız', 'danger');
                 }
                 
             } catch (error) {
                 console.error('Kategori silinirken hata:', error);
-                showAlert('Kategori silinirken hata oluştu', 'error');
+                showAlert('Kategori silinirken hata oluştu', 'danger');
             }
         }
         
         // Alert göster
         function showAlert(message, type) {
             const container = document.getElementById('alert-container');
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
-            
-            container.innerHTML = `
-                <div class="alert ${alertClass}">
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
                     ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
             
+            container.innerHTML = alertHtml;
+            
             setTimeout(() => {
-                container.innerHTML = '';
+                const alert = container.querySelector('.alert');
+                if (alert) {
+                    bootstrap.Alert.getInstance(alert)?.close();
+                }
             }, 5000);
         }
         

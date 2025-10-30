@@ -828,4 +828,82 @@ class Urun {
         
         return $stmt;
     }
+    
+    /**
+     * Stats - Toplam ürün sayısı
+     */
+    public function getTotalCount($filtreler = []) {
+        $query = "SELECT COUNT(*) FROM " . $this->table_name;
+        $where = [];
+        $params = [];
+        
+        if (!empty($filtreler['aktif'])) {
+            $where[] = "aktif = :aktif";
+            $params[':aktif'] = $filtreler['aktif'];
+        }
+        
+        if (!empty($filtreler['kategori_id'])) {
+            $where[] = "kategori_id = :kategori_id";
+            $params[':kategori_id'] = $filtreler['kategori_id'];
+        }
+        
+        if (!empty($filtreler['arama'])) {
+            $where[] = "(urun_adi LIKE :arama OR urun_kodu LIKE :arama OR barkod LIKE :arama)";
+            $params[':arama'] = '%' . $filtreler['arama'] . '%';
+        }
+        
+        if (!empty($filtreler['stok_filtre'])) {
+            if ($filtreler['stok_filtre'] === 'low') {
+                $where[] = "stok_miktari <= 5";
+            } elseif ($filtreler['stok_filtre'] === 'out') {
+                $where[] = "stok_miktari = 0";
+            }
+        }
+        
+        if (!empty($where)) {
+            $query .= " WHERE " . implode(" AND ", $where);
+        }
+        
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+        
+        return $stmt->fetchColumn();
+    }
+    
+    /**
+     * Stats - Aktif ürün sayısı
+     */
+    public function getActiveCount() {
+        $query = "SELECT COUNT(*) FROM " . $this->table_name . " WHERE aktif = 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        return $stmt->fetchColumn();
+    }
+    
+    /**
+     * Stats - Düşük stoklu ürün sayısı
+     */
+    public function getLowStockCount() {
+        $query = "SELECT COUNT(*) FROM " . $this->table_name . " WHERE aktif = 1 AND stok_miktari <= 5";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        return $stmt->fetchColumn();
+    }
+    
+    /**
+     * Stats - Yeni ürün sayısı (son 30 gün)
+     */
+    public function getNewProductsCount() {
+        $query = "SELECT COUNT(*) FROM " . $this->table_name . " 
+                  WHERE aktif = 1 AND olusturma_tarihi >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        return $stmt->fetchColumn();
+    }
 }

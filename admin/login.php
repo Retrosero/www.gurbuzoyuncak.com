@@ -31,6 +31,10 @@ $timeout = isset($_GET['timeout']) ? true : false;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Girişi | Gürbüz Oyuncak</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         * {
             margin: 0;
@@ -40,7 +44,7 @@ $timeout = isset($_GET['timeout']) ? true : false;
         
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1E88E5 0%, #00BFA5 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -53,7 +57,7 @@ $timeout = isset($_GET['timeout']) ? true : false;
             padding: 3rem;
             border-radius: 1rem;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 400px;
+            max-width: 420px;
             width: 100%;
         }
         
@@ -62,65 +66,36 @@ $timeout = isset($_GET['timeout']) ? true : false;
             margin-bottom: 2rem;
         }
         
+        .logo-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         .logo h1 {
-            color: #1E88E5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             font-size: 2rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
         }
         
         .logo p {
-            color: #6B7280;
+            color: #6b7280;
             font-size: 0.875rem;
         }
         
-        .alert {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .alert-error {
-            background-color: #FEE2E2;
-            color: #991B1B;
-            border: 1px solid #FCA5A5;
-        }
-        
-        .alert-warning {
-            background-color: #FEF3C7;
-            color: #92400E;
-            border: 1px solid #FCD34D;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #1F2937;
-        }
-        
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        .form-group input:focus {
-            outline: none;
-            border-color: #1E88E5;
-            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
-        }
-        
-        .btn {
+        .btn-login {
             width: 100%;
             padding: 0.875rem;
-            background-color: #1E88E5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 0.5rem;
@@ -130,66 +105,104 @@ $timeout = isset($_GET['timeout']) ? true : false;
             transition: all 0.3s;
         }
         
-        .btn:hover {
-            background-color: #1565C0;
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
         
         .login-footer {
             margin-top: 2rem;
             text-align: center;
-            color: #6B7280;
+            color: #6b7280;
             font-size: 0.875rem;
         }
         
         .login-footer a {
-            color: #1E88E5;
+            color: #667eea;
             text-decoration: none;
+            font-weight: 600;
         }
         
         .login-footer a:hover {
             text-decoration: underline;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 2rem 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="logo">
+            <div class="logo-icon">
+                <i data-lucide="shield-check" style="width: 32px; height: 32px; color: white;"></i>
+            </div>
             <h1>Gürbüz Oyuncak</h1>
             <p>Admin Paneli</p>
         </div>
         
         <?php if ($timeout): ?>
-            <div class="alert alert-warning">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i data-lucide="clock" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>
                 Oturumunuz zaman aşımına uğradı. Lütfen tekrar giriş yapın.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
         
         <?php if ($error): ?>
-            <div class="alert alert-error">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i data-lucide="alert-circle" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>
                 <?php echo htmlspecialchars($error); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
         
         <form method="POST" action="">
-            <div class="form-group">
-                <label for="username">Kullanıcı Adı</label>
-                <input type="text" id="username" name="username" required autofocus>
+            <div class="mb-3">
+                <label for="username" class="form-label">Kullanıcı Adı</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+                    </span>
+                    <input type="text" class="form-control" id="username" name="username" required autofocus>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="password">Şifre</label>
-                <input type="password" id="password" name="password" required>
+            <div class="mb-4">
+                <label for="password" class="form-label">Şifre</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i data-lucide="lock" style="width: 18px; height: 18px;"></i>
+                    </span>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
             </div>
             
-            <button type="submit" class="btn">Giriş Yap</button>
+            <button type="submit" class="btn-login">
+                <i data-lucide="log-in" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i>
+                Giriş Yap
+            </button>
         </form>
         
         <div class="login-footer">
-            <p>Test Bilgileri: admin / admin123</p>
+            <p class="mb-2">
+                <small>Test Bilgileri: <strong>admin / admin123</strong></small>
+            </p>
             <p style="margin-top: 1rem;">
-                <a href="../public/index.html">Ana Sayfaya Dön</a>
+                <a href="../public/index.html">
+                    <i data-lucide="arrow-left" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+                    Ana Sayfaya Dön
+                </a>
             </p>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>

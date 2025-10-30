@@ -1,510 +1,563 @@
 <?php
-// Basit auth kontrolü (production'da session kullanılmalı)
-// session_start();
-// if (!isset($_SESSION['admin_logged_in'])) {
-//     header('Location: login.php');
-//     exit;
-// }
+/**
+ * Ürün Yönetimi - Admin Panel
+ * Gürbüz Oyuncak E-Ticaret Sistemi
+ * Mobile Responsive & Component Sistemi ile Modernize Edildi
+ */
+
+require_once 'includes/auth.php';
+require_once '../components/ComponentLoader.php';
+
+// Admin giriş kontrolü
+if (!isAdminLoggedIn()) {
+    header("Location: login.php");
+    exit();
+}
+
+// Component Loader
+$loader = new ComponentLoader();
 ?>
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ürün Yönetimi | Gürbüz Oyuncak Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Ürün Yönetimi - Gürbüz Oyuncak Admin</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Component CSS -->
+    <link rel="stylesheet" href="../components/css/components.css">
+    
+    <!-- Custom Styles -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6;
-        }
-        
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
-        
-        .sidebar {
-            background-color: #1F2937;
-            color: #FFFFFF;
+        .page-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
             padding: 2rem 0;
-        }
-        
-        .sidebar-header {
-            padding: 0 1.5rem 2rem;
-            border-bottom: 1px solid #374151;
-        }
-        
-        .sidebar-header h2 {
-            font-size: 1.5rem;
-            color: #1E88E5;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            margin-top: 2rem;
-        }
-        
-        .sidebar-menu li {
-            margin-bottom: 0.5rem;
-        }
-        
-        .sidebar-menu a {
-            display: block;
-            padding: 0.75rem 1.5rem;
-            color: #D1D5DB;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background-color: #374151;
-            color: #FFFFFF;
-            border-left: 3px solid #1E88E5;
-        }
-        
-        .main-content {
-            padding: 2rem;
-        }
-        
-        .top-bar {
-            background-color: #FFFFFF;
-            padding: 1rem 2rem;
-            margin: -2rem -2rem 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .card {
-            background-color: #FFFFFF;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
         
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        .card-header h2 {
-            font-size: 1.25rem;
-            color: #1F2937;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            text-decoration: none;
-            font-size: 0.875rem;
-        }
-        
-        .btn-primary {
-            background-color: #1E88E5;
-            color: #FFFFFF;
-        }
-        
-        .btn-primary:hover {
-            background-color: #1565C0;
-        }
-        
-        .btn-danger {
-            background-color: #C62828;
-            color: #FFFFFF;
-            padding: 0.375rem 0.75rem;
-        }
-        
-        .btn-warning {
-            background-color: #F9A825;
-            color: #FFFFFF;
-            padding: 0.375rem 0.75rem;
-        }
-        
-        .btn-success {
-            background-color: #2E7D32;
-            color: #FFFFFF;
-        }
-        
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        thead {
-            background-color: #F9FAFB;
-        }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #E5E7EB;
-        }
-        
-        th {
+        .page-header h1 {
+            font-size: 1.75rem;
             font-weight: 600;
-            color: #374151;
-            font-size: 0.875rem;
-        }
-        
-        tbody tr:hover {
-            background-color: #F9FAFB;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .badge-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-        }
-        
-        .badge-danger {
-            background-color: #FEE2E2;
-            color: #991B1B;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-            font-size: 0.875rem;
         }
         
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
+        .page-header .btn {
+            background: white;
+            color: #4CAF50;
+            font-weight: 600;
+            border: none;
+            min-height: 44px;
+            padding: 0.625rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
         
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
+        .page-header .btn:hover {
+            background: #f1f8f4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+        .filter-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            border: 1px solid #e9ecef;
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.95rem;
+            min-height: 44px;
         }
         
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.15);
         }
         
-        .modal-content {
-            background-color: #FFFFFF;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid #e9ecef;
         }
         
-        .modal-header {
+        .table-card-header {
+            padding: 1.25rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E5E7EB;
         }
         
-        .modal-header h3 {
-            font-size: 1.25rem;
-            color: #1F2937;
+        .table-card-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
         }
         
-        .close {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #6B7280;
-            cursor: pointer;
+        .product-count {
+            font-size: 0.875rem;
+            color: #6c757d;
+            background: #e9ecef;
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
         }
         
-        .close:hover {
-            color: #1F2937;
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .products-table {
+            margin-bottom: 0;
+        }
+        
+        .products-table thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .products-table th {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.875rem;
+            padding: 1rem 0.75rem;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap;
+        }
+        
+        .products-table td {
+            padding: 0.875rem 0.75rem;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        
+        .products-table tbody tr {
+            transition: all 0.2s;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .products-table tbody tr:hover {
+            background: #f8f9fa;
         }
         
         .product-image {
             width: 50px;
             height: 50px;
             object-fit: cover;
-            border-radius: 0.25rem;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
         }
         
-        .actions {
+        .badge-status {
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .badge-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .btn-action {
+            min-height: 38px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-group-action {
             display: flex;
             gap: 0.5rem;
-        }
-        
-        .filter-bar {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
         
-        .filter-bar select,
-        .filter-bar input {
-            padding: 0.5rem;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
         }
         
-        .alert {
-            padding: 1rem;
-            border-radius: 0.375rem;
+        .empty-state i {
+            font-size: 4rem;
+            opacity: 0.3;
             margin-bottom: 1rem;
         }
         
-        .alert-success {
-            background-color: #D1FAE5;
-            color: #065F46;
-            border: 1px solid #6EE7B7;
+        .modal-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
         }
         
-        .alert-error {
-            background-color: #FEE2E2;
-            color: #991B1B;
-            border: 1px solid #FCA5A5;
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
         }
         
         .image-preview {
             margin-top: 1rem;
+            text-align: center;
         }
         
         .image-preview img {
-            max-width: 200px;
+            max-width: 100%;
             max-height: 200px;
-            border-radius: 0.5rem;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .filter-card {
+                padding: 1rem;
+            }
+            
+            .table-card-header {
+                padding: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .products-table th,
+            .products-table td {
+                padding: 0.625rem 0.5rem;
+                font-size: 0.8125rem;
+            }
+            
+            .product-image {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .btn-group-action {
+                flex-direction: column;
+            }
+            
+            .btn-group-action .btn {
+                width: 100%;
+            }
+            
+            /* Hide less important columns on mobile */
+            .hide-mobile {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .page-header {
+                padding: 1.5rem 0;
+            }
+            
+            .modal-body {
+                padding: 1rem;
+            }
+        }
+        
+        /* Loading spinner */
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
         }
     </style>
 </head>
+
 <body>
-    <div class="admin-layout">
-        <!-- Sidebar -->
-        <?php include 'includes/sidebar.php'; ?>
-        
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="top-bar">
-                <h1>Ürün Yönetimi</h1>
-                <button class="btn btn-primary" onclick="openModal('add')">
-                    + Yeni Ürün Ekle
+    <!-- Sidebar -->
+    <?php $loader->loadComponent('sidebar', ['type' => 'admin', 'active' => 'products']); ?>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Mobile Header -->
+        <div class="mobile-header d-md-none">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="mobile-header-title">Ürün Yönetimi</div>
+            <div class="mobile-header-actions">
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i>
                 </button>
             </div>
+        </div>
+        
+        <div class="container-fluid p-3 p-md-4">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h1><i class="fas fa-box me-2"></i> Ürün Yönetimi</h1>
+                        <p class="mb-0 opacity-90">Ürünleri görüntüle, ekle, düzenle ve yönet</p>
+                    </div>
+                    <button class="btn d-none d-md-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i> Yeni Ürün Ekle
+                    </button>
+                </div>
+            </div>
             
-            <div id="alert-container"></div>
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
             
             <!-- Filters -->
-            <div class="card">
-                <div class="filter-bar">
-                    <input type="text" id="search" placeholder="Ürün adı, SKU ara..." style="min-width: 250px;">
-                    <select id="category-filter">
-                        <option value="">Tüm Kategoriler</option>
-                    </select>
-                    <select id="status-filter">
-                        <option value="">Tüm Durumlar</option>
-                        <option value="1">Aktif</option>
-                        <option value="0">Pasif</option>
-                    </select>
-                    <button class="btn btn-primary btn-sm" onclick="loadProducts()">Filtrele</button>
-                </div>
-            </div>
-            
-            <!-- Products Table -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Ürünler</h2>
-                    <span id="product-count">Toplam: 0 ürün</span>
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Görsel</th>
-                            <th>Ürün Adı</th>
-                            <th>SKU</th>
-                            <th>Kategori</th>
-                            <th>Fiyat</th>
-                            <th>Stok</th>
-                            <th>Durum</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody id="products-table">
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 2rem; color: #6B7280;">
-                                Yükleniyor...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
-    </div>
-    
-    <!-- Add/Edit Product Modal -->
-    <div id="product-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Yeni Ürün Ekle</h3>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            
-            <form id="product-form" onsubmit="saveProduct(event)">
-                <input type="hidden" id="product-id">
-                
-                <div class="form-group">
-                    <label>Ürün Adı *</label>
-                    <input type="text" id="product-name" required>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>SKU *</label>
-                        <input type="text" id="product-sku" required>
+            <div class="filter-card">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Ürün adı, SKU ara...">
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Kategori *</label>
-                        <select id="product-category" required>
-                            <option value="">Seçiniz</option>
+                    <div class="col-6 col-md-3">
+                        <select id="categoryFilter" class="form-select">
+                            <option value="">Tüm Kategoriler</option>
                         </select>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>Açıklama</label>
-                    <textarea id="product-description"></textarea>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fiyat (₺) *</label>
-                        <input type="number" id="product-price" step="0.01" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>İndirimli Fiyat (₺)</label>
-                        <input type="number" id="product-sale-price" step="0.01">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Stok Adedi *</label>
-                        <input type="number" id="product-stock" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Yaş Grubu</label>
-                        <select id="product-age-group">
-                            <option value="">Seçiniz</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Marka</label>
-                        <select id="product-brand">
-                            <option value="">Seçiniz</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Durum</label>
-                        <select id="product-status">
+                    <div class="col-6 col-md-3">
+                        <select id="statusFilter" class="form-select">
+                            <option value="">Tüm Durumlar</option>
                             <option value="1">Aktif</option>
                             <option value="0">Pasif</option>
                         </select>
                     </div>
+                    <div class="col-12 col-md-2">
+                        <button class="btn btn-primary w-100" onclick="loadProducts()">
+                            <i class="fas fa-filter me-2"></i> Filtrele
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Table -->
+            <div class="table-card">
+                <div class="table-card-header">
+                    <h2><i class="fas fa-list me-2"></i> Ürünler</h2>
+                    <span class="product-count" id="productCount">Toplam: 0 ürün</span>
                 </div>
                 
-                <div class="form-group">
-                    <label>Ürün Görseli</label>
-                    <input type="file" id="product-image" accept="image/*" onchange="previewImage(event)">
-                    <div id="image-preview" class="image-preview"></div>
+                <div class="table-responsive">
+                    <table class="table products-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px;">Görsel</th>
+                                <th>Ürün Adı</th>
+                                <th class="hide-mobile">SKU</th>
+                                <th class="hide-mobile">Kategori</th>
+                                <th>Fiyat</th>
+                                <th class="hide-mobile">Stok</th>
+                                <th>Durum</th>
+                                <th style="width: 180px;">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Yükleniyor...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted mb-0">Ürünler yükleniyor...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn btn-success" style="flex: 1;">
-                        Kaydet
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="closeModal()" style="flex: 1;">
-                        İptal
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
     
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalLabel">
+                        <i class="fas fa-box me-2"></i> Yeni Ürün Ekle
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm" onsubmit="saveProduct(event)">
+                        <input type="hidden" id="productId">
+                        
+                        <div class="mb-3">
+                            <label for="productName" class="form-label">Ürün Adı *</label>
+                            <input type="text" class="form-control" id="productName" required>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="productSku" class="form-label">SKU *</label>
+                                <input type="text" class="form-control" id="productSku" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="productCategory" class="form-label">Kategori *</label>
+                                <select class="form-select" id="productCategory" required>
+                                    <option value="">Seçiniz</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="productDescription" class="form-label">Açıklama</label>
+                            <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="productPrice" class="form-label">Fiyat (₺) *</label>
+                                <input type="number" class="form-control" id="productPrice" step="0.01" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="productSalePrice" class="form-label">İndirimli Fiyat (₺)</label>
+                                <input type="number" class="form-control" id="productSalePrice" step="0.01">
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="productStock" class="form-label">Stok Adedi *</label>
+                                <input type="number" class="form-control" id="productStock" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="productAgeGroup" class="form-label">Yaş Grubu</label>
+                                <select class="form-select" id="productAgeGroup">
+                                    <option value="">Seçiniz</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="productBrand" class="form-label">Marka</label>
+                                <select class="form-select" id="productBrand">
+                                    <option value="">Seçiniz</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="productStatus" class="form-label">Durum</label>
+                                <select class="form-select" id="productStatus">
+                                    <option value="1">Aktif</option>
+                                    <option value="0">Pasif</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="productImage" class="form-label">Ürün Görseli</label>
+                            <input type="file" class="form-control" id="productImage" accept="image/*" onchange="previewImage(event)">
+                            <div id="imagePreview" class="image-preview"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i> İptal
+                    </button>
+                    <button type="submit" form="productForm" class="btn btn-success">
+                        <i class="fas fa-save me-2"></i> Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Component Loader JS -->
+    <script src="../components/js/component-loader.js"></script>
+    
+    <!-- Custom Scripts -->
     <script>
         let categories = [];
         let ageGroups = [];
         let brands = [];
+        let productModal;
         
         // Sayfa yüklendiğinde
         document.addEventListener('DOMContentLoaded', function() {
+            productModal = new bootstrap.Modal(document.getElementById('productModal'));
+            
             loadCategories();
             loadAgeGroups();
             loadBrands();
             loadProducts();
+            
+            // Mobile menu toggle
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('sidebar-open');
+                });
+            }
+            
+            // Search debounce
+            let searchTimeout;
+            document.getElementById('searchInput').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    loadProducts();
+                }, 500);
+            });
         });
         
         // Kategorileri yükle
@@ -514,8 +567,11 @@
                 const data = await response.json();
                 categories = data.data || [];
                 
-                const categoryFilter = document.getElementById('category-filter');
-                const productCategory = document.getElementById('product-category');
+                const categoryFilter = document.getElementById('categoryFilter');
+                const productCategory = document.getElementById('productCategory');
+                
+                categoryFilter.innerHTML = '<option value="">Tüm Kategoriler</option>';
+                productCategory.innerHTML = '<option value="">Seçiniz</option>';
                 
                 categories.forEach(cat => {
                     categoryFilter.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
@@ -526,47 +582,73 @@
             }
         }
         
-        // Yaş gruplarını yükle
+        // Yaş gruplarını yükle (Gerçek API)
         async function loadAgeGroups() {
-            // Mock data - API'den çekilebilir
-            ageGroups = [
-                {id: 1, name: '0-3 yaş'},
-                {id: 2, name: '4-7 yaş'},
-                {id: 3, name: '8+ yaş'}
-            ];
-            
-            const ageGroupSelect = document.getElementById('product-age-group');
-            ageGroups.forEach(ag => {
-                ageGroupSelect.innerHTML += `<option value="${ag.id}">${ag.name}</option>`;
-            });
+            try {
+                const response = await fetch('../backend/api/age_groups.php');
+                const data = await response.json();
+                ageGroups = data.data || [];
+                
+                const ageGroupSelect = document.getElementById('productAgeGroup');
+                ageGroupSelect.innerHTML = '<option value="">Seçiniz</option>';
+                ageGroups.forEach(ag => {
+                    ageGroupSelect.innerHTML += `<option value="${ag.id}">${ag.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Yaş grupları yüklenemedi:', error);
+                // Fallback: Mock data
+                ageGroups = [
+                    {id: 1, name: '0-3 yaş'},
+                    {id: 2, name: '4-7 yaş'},
+                    {id: 3, name: '8+ yaş'}
+                ];
+                const ageGroupSelect = document.getElementById('productAgeGroup');
+                ageGroupSelect.innerHTML = '<option value="">Seçiniz</option>';
+                ageGroups.forEach(ag => {
+                    ageGroupSelect.innerHTML += `<option value="${ag.id}">${ag.name}</option>`;
+                });
+            }
         }
         
-        // Markaları yükle
+        // Markaları yükle (Gerçek API)
         async function loadBrands() {
-            // Mock data - API'den çekilebilir
-            brands = [
-                {id: 1, name: 'Gürbüz Oyuncak'},
-                {id: 2, name: 'Barbie'},
-                {id: 3, name: 'Hot Wheels'},
-                {id: 4, name: 'LEGO'},
-                {id: 5, name: 'Playmobil'}
-            ];
-            
-            const brandSelect = document.getElementById('product-brand');
-            brands.forEach(brand => {
-                brandSelect.innerHTML += `<option value="${brand.id}">${brand.name}</option>`;
-            });
+            try {
+                const response = await fetch('../backend/api/brands.php');
+                const data = await response.json();
+                brands = data.data || [];
+                
+                const brandSelect = document.getElementById('productBrand');
+                brandSelect.innerHTML = '<option value="">Seçiniz</option>';
+                brands.forEach(brand => {
+                    brandSelect.innerHTML += `<option value="${brand.id}">${brand.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Markalar yüklenemedi:', error);
+                // Fallback: Mock data
+                brands = [
+                    {id: 1, name: 'Gürbüz Oyuncak'},
+                    {id: 2, name: 'Barbie'},
+                    {id: 3, name: 'Hot Wheels'},
+                    {id: 4, name: 'LEGO'},
+                    {id: 5, name: 'Playmobil'}
+                ];
+                const brandSelect = document.getElementById('productBrand');
+                brandSelect.innerHTML = '<option value="">Seçiniz</option>';
+                brands.forEach(brand => {
+                    brandSelect.innerHTML += `<option value="${brand.id}">${brand.name}</option>`;
+                });
+            }
         }
         
         // Ürünleri yükle
         async function loadProducts() {
             try {
-                const search = document.getElementById('search').value;
-                const category = document.getElementById('category-filter').value;
-                const status = document.getElementById('status-filter').value;
+                const search = document.getElementById('searchInput').value;
+                const category = document.getElementById('categoryFilter').value;
+                const status = document.getElementById('statusFilter').value;
                 
                 let url = '../backend/api/products.php?';
-                if (search) url += `search=${search}&`;
+                if (search) url += `search=${encodeURIComponent(search)}&`;
                 if (category) url += `category_id=${category}&`;
                 if (status !== '') url += `is_active=${status}&`;
                 
@@ -574,14 +656,15 @@
                 const data = await response.json();
                 
                 const products = data.data || [];
-                const tbody = document.getElementById('products-table');
-                document.getElementById('product-count').textContent = `Toplam: ${products.length} ürün`;
+                const tbody = document.getElementById('productsTableBody');
+                document.getElementById('productCount').textContent = `Toplam: ${products.length} ürün`;
                 
                 if (products.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="8" style="text-align: center; padding: 2rem; color: #6B7280;">
-                                Ürün bulunamadı
+                            <td colspan="8" class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p class="mb-0">Ürün bulunamadı</p>
                             </td>
                         </tr>
                     `;
@@ -591,26 +674,26 @@
                 tbody.innerHTML = products.map(product => `
                     <tr>
                         <td>
-                            <img src="${product.image_url || 'https://via.placeholder.com/50'}" 
+                            <img src="${product.image_url || 'https://via.placeholder.com/50?text=Ürün'}" 
                                  alt="${product.name}" class="product-image">
                         </td>
-                        <td>${product.name}</td>
-                        <td>${product.sku}</td>
-                        <td>${product.category_name || '-'}</td>
-                        <td>₺${parseFloat(product.price).toFixed(2)}</td>
-                        <td>${product.stock_quantity}</td>
+                        <td><strong>${product.name}</strong></td>
+                        <td class="hide-mobile text-muted">${product.sku}</td>
+                        <td class="hide-mobile">${product.category_name || '-'}</td>
+                        <td><strong>₺${parseFloat(product.price).toFixed(2)}</strong></td>
+                        <td class="hide-mobile">${product.stock_quantity}</td>
                         <td>
-                            <span class="badge ${product.is_active ? 'badge-success' : 'badge-danger'}">
+                            <span class="badge-status ${product.is_active ? 'badge-active' : 'badge-inactive'}">
                                 ${product.is_active ? 'Aktif' : 'Pasif'}
                             </span>
                         </td>
                         <td>
-                            <div class="actions">
-                                <button class="btn btn-warning btn-sm" onclick="editProduct(${product.id})">
-                                    Düzenle
+                            <div class="btn-group-action">
+                                <button class="btn btn-warning btn-action btn-sm" onclick="editProduct(${product.id})">
+                                    <i class="fas fa-edit me-1"></i> Düzenle
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">
-                                    Sil
+                                <button class="btn btn-danger btn-action btn-sm" onclick="deleteProduct(${product.id})">
+                                    <i class="fas fa-trash me-1"></i> Sil
                                 </button>
                             </div>
                         </td>
@@ -619,28 +702,16 @@
                 
             } catch (error) {
                 console.error('Ürünler yüklenemedi:', error);
-                showAlert('Ürünler yüklenirken hata oluştu', 'error');
+                showAlert('Ürünler yüklenirken hata oluştu', 'danger');
             }
         }
         
-        // Modal aç
-        function openModal(mode, productId = null) {
-            const modal = document.getElementById('product-modal');
-            const title = document.getElementById('modal-title');
-            
-            if (mode === 'add') {
-                title.textContent = 'Yeni Ürün Ekle';
-                document.getElementById('product-form').reset();
-                document.getElementById('product-id').value = '';
-                document.getElementById('image-preview').innerHTML = '';
-            }
-            
-            modal.classList.add('active');
-        }
-        
-        // Modal kapat
-        function closeModal() {
-            document.getElementById('product-modal').classList.remove('active');
+        // Modal aç (Add)
+        function openAddModal() {
+            document.getElementById('productModalLabel').innerHTML = '<i class="fas fa-box me-2"></i> Yeni Ürün Ekle';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('imagePreview').innerHTML = '';
         }
         
         // Ürün düzenle
@@ -650,29 +721,29 @@
                 const data = await response.json();
                 const product = data.data;
                 
-                document.getElementById('modal-title').textContent = 'Ürün Düzenle';
-                document.getElementById('product-id').value = product.id;
-                document.getElementById('product-name').value = product.name;
-                document.getElementById('product-sku').value = product.sku;
-                document.getElementById('product-category').value = product.category_id;
-                document.getElementById('product-description').value = product.description || '';
-                document.getElementById('product-price').value = product.price;
-                document.getElementById('product-sale-price').value = product.sale_price || '';
-                document.getElementById('product-stock').value = product.stock_quantity;
-                document.getElementById('product-age-group').value = product.age_group_id || '';
-                document.getElementById('product-brand').value = product.brand_id || '';
-                document.getElementById('product-status').value = product.is_active ? '1' : '0';
+                document.getElementById('productModalLabel').innerHTML = '<i class="fas fa-edit me-2"></i> Ürün Düzenle';
+                document.getElementById('productId').value = product.id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productSku').value = product.sku;
+                document.getElementById('productCategory').value = product.category_id;
+                document.getElementById('productDescription').value = product.description || '';
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productSalePrice').value = product.sale_price || '';
+                document.getElementById('productStock').value = product.stock_quantity;
+                document.getElementById('productAgeGroup').value = product.age_group_id || '';
+                document.getElementById('productBrand').value = product.brand_id || '';
+                document.getElementById('productStatus').value = product.is_active ? '1' : '0';
                 
                 if (product.image_url) {
-                    document.getElementById('image-preview').innerHTML = 
+                    document.getElementById('imagePreview').innerHTML = 
                         `<img src="${product.image_url}" alt="${product.name}">`;
                 }
                 
-                openModal('edit', id);
+                productModal.show();
                 
             } catch (error) {
                 console.error('Ürün bilgileri yüklenemedi:', error);
-                showAlert('Ürün bilgileri yüklenirken hata oluştu', 'error');
+                showAlert('Ürün bilgileri yüklenirken hata oluştu', 'danger');
             }
         }
         
@@ -680,20 +751,20 @@
         async function saveProduct(event) {
             event.preventDefault();
             
-            const id = document.getElementById('product-id').value;
+            const id = document.getElementById('productId').value;
             const method = id ? 'PUT' : 'POST';
             
             const productData = {
-                name: document.getElementById('product-name').value,
-                sku: document.getElementById('product-sku').value,
-                category_id: document.getElementById('product-category').value,
-                description: document.getElementById('product-description').value,
-                price: document.getElementById('product-price').value,
-                sale_price: document.getElementById('product-sale-price').value || null,
-                stock_quantity: document.getElementById('product-stock').value,
-                age_group_id: document.getElementById('product-age-group').value || null,
-                brand_id: document.getElementById('product-brand').value || null,
-                is_active: document.getElementById('product-status').value
+                name: document.getElementById('productName').value,
+                sku: document.getElementById('productSku').value,
+                category_id: document.getElementById('productCategory').value,
+                description: document.getElementById('productDescription').value,
+                price: document.getElementById('productPrice').value,
+                sale_price: document.getElementById('productSalePrice').value || null,
+                stock_quantity: document.getElementById('productStock').value,
+                age_group_id: document.getElementById('productAgeGroup').value || null,
+                brand_id: document.getElementById('productBrand').value || null,
+                is_active: document.getElementById('productStatus').value
             };
             
             if (id) {
@@ -713,15 +784,15 @@
                 
                 if (result.success) {
                     showAlert(id ? 'Ürün başarıyla güncellendi' : 'Ürün başarıyla eklendi', 'success');
-                    closeModal();
+                    productModal.hide();
                     loadProducts();
                 } else {
-                    showAlert(result.message || 'İşlem başarısız', 'error');
+                    showAlert(result.message || 'İşlem başarısız', 'danger');
                 }
                 
             } catch (error) {
                 console.error('Ürün kaydedilirken hata:', error);
-                showAlert('Ürün kaydedilirken hata oluştu', 'error');
+                showAlert('Ürün kaydedilirken hata oluştu', 'danger');
             }
         }
         
@@ -746,12 +817,12 @@
                     showAlert('Ürün başarıyla silindi', 'success');
                     loadProducts();
                 } else {
-                    showAlert(result.message || 'Silme işlemi başarısız', 'error');
+                    showAlert(result.message || 'Silme işlemi başarısız', 'danger');
                 }
                 
             } catch (error) {
                 console.error('Ürün silinirken hata:', error);
-                showAlert('Ürün silinirken hata oluştu', 'error');
+                showAlert('Ürün silinirken hata oluştu', 'danger');
             }
         }
         
@@ -761,7 +832,7 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('image-preview').innerHTML = 
+                    document.getElementById('imagePreview').innerHTML = 
                         `<img src="${e.target.result}" alt="Preview">`;
                 };
                 reader.readAsDataURL(file);
@@ -770,28 +841,25 @@
         
         // Alert göster
         function showAlert(message, type) {
-            const container = document.getElementById('alert-container');
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+            const container = document.getElementById('alertContainer');
+            const alertClass = `alert-${type}`;
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
             
             container.innerHTML = `
-                <div class="alert ${alertClass}">
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="fas ${iconClass} me-2"></i>
                     ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
             
             setTimeout(() => {
-                container.innerHTML = '';
+                const alert = container.querySelector('.alert');
+                if (alert) {
+                    bootstrap.Alert.getOrCreateInstance(alert).close();
+                }
             }, 5000);
         }
-        
-        // Arama inputu için debounce
-        let searchTimeout;
-        document.getElementById('search').addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                loadProducts();
-            }, 500);
-        });
     </script>
 </body>
 </html>
