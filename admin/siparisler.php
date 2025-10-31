@@ -495,12 +495,10 @@ require_once '../components/ComponentLoader.php';
     </style>
 </head>
 <body>
-    <!-- Component Loader -->
-    <?php includeComponent('navbar', ['variant' => 'admin']); ?>
-    <?php includeComponent('sidebar', ['variant' => 'admin']); ?>
-    
-    <div class="main-wrapper">
-        <div class="content-area">
+    <div class="admin-wrapper">
+        <?php include 'includes/sidebar.php'; ?>
+        
+        <div class="main-content">
             <!-- Sayfa Başlığı -->
             <div class="page-header">
                 <h1 class="page-title">
@@ -1160,5 +1158,7 @@ require_once '../components/ComponentLoader.php';
             };
         }
     </script>
+        </div><!-- .main-content -->
+    </div><!-- .admin-wrapper -->
 </body>
 </html>

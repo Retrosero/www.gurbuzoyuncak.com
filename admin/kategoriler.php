@@ -553,14 +553,12 @@ $currentPage = 'kategoriler';
         <i class="bi bi-wifi-off"></i> Bağlantı Kesildi
     </div>
 
-    <!-- Navbar -->
-    <?= $loader->loadComponent('navbar', ['currentPage' => $currentPage, 'type' => 'admin']) ?>
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+        <?php include 'includes/sidebar.php'; ?>
 
-    <!-- Sidebar -->
-    <?= $loader->loadComponent('sidebar', ['currentPage' => $currentPage, 'type' => 'admin']) ?>
-
-    <!-- Main Content -->
-    <div class="main-content">
+        <!-- Main Content -->
+        <div class="main-content">
         <!-- Page Header -->
         <div class="page-header">
             <h1><i class="bi bi-diagram-3"></i> Kategori Yönetimi</h1>
@@ -1641,5 +1639,7 @@ $currentPage = 'kategoriler';
             categoryManager = new CategoryManager();
         });
     </script>
+        </div><!-- .main-content -->
+    </div><!-- .admin-wrapper -->
 </body>
 </html>

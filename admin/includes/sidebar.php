@@ -15,13 +15,13 @@ $current_page = basename($_SERVER['REQUEST_URI']);
             <a href="index.php"><i class="fas fa-home"></i> Dashboard</a>
         </li>
         <li class="<?php echo ($current_page == 'products.php' || $current_page == 'urunler.php') ? 'active' : ''; ?>">
-            <a href="products.php"><i class="fas fa-box"></i> Ürünler</a>
+            <a href="urunler.php"><i class="fas fa-box"></i> Ürünler</a>
         </li>
         <li class="<?php echo ($current_page == 'categories.php' || $current_page == 'kategoriler.php') ? 'active' : ''; ?>">
-            <a href="categories.php"><i class="fas fa-tags"></i> Kategoriler</a>
+            <a href="kategoriler.php"><i class="fas fa-tags"></i> Kategoriler</a>
         </li>
         <li class="<?php echo ($current_page == 'orders.php' || $current_page == 'siparisler.php') ? 'active' : ''; ?>">
-            <a href="orders.php"><i class="fas fa-shopping-cart"></i> Siparişler</a>
+            <a href="siparisler.php"><i class="fas fa-shopping-cart"></i> Siparişler</a>
         </li>
         <li class="<?php echo ($current_page == 'customers.php') ? 'active' : ''; ?>">
             <a href="customers.php"><i class="fas fa-users"></i> Müşteriler</a>

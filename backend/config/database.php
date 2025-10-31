@@ -5,7 +5,16 @@
  */
 
 // Ana config dosyasını yükle
-require_once __DIR__ . '/../../config.php';
+$config_path = __DIR__ . '/../../config.php';
+if (!file_exists($config_path)) {
+    die("Config dosyası bulunamadı: " . $config_path);
+}
+require_once $config_path;
+
+// Config sabitlerinin tanımlı olduğunu kontrol et
+if (!defined('DB_HOST')) {
+    die("Config dosyası yüklendi ancak DB_HOST tanımlı değil!");
+}
 
 class Database {
     // Veritabanı bağlantı bilgileri (config.php'den alınıyor)

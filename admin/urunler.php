@@ -19,6 +19,9 @@ if (!isAdminLoggedIn()) {
     <!-- Bootstrap 5.3.2 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <!-- Component CSS -->
     <link rel="stylesheet" href="../components/css/components.css">
     
@@ -32,10 +35,29 @@ if (!isAdminLoggedIn()) {
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
         .main-content {
+            flex: 1;
+            margin-left: 280px;
             padding: 1.5rem;
             background: #f8f9fa;
             min-height: 100vh;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
         }
         
         .stats-grid {
@@ -224,10 +246,10 @@ if (!isAdminLoggedIn()) {
     </style>
 </head>
 <body>
-    <?php ComponentLoader::load('navbar', ['variant' => 'admin']); ?>
-    <?php ComponentLoader::load('sidebar', ['variant' => 'admin', 'active' => 'urunler']); ?>
-    
-    <div class="main-content">
+    <div class="admin-wrapper">
+        <?php include 'includes/sidebar.php'; ?>
+        
+        <div class="main-content">
         <!-- Stats Dashboard -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -1109,6 +1131,8 @@ if (!isAdminLoggedIn()) {
         // Initialize Product Manager
         const productManager = new ProductManager();
     </script>
+        </div><!-- .main-content -->
+    </div><!-- .admin-wrapper -->
 </body>
 </html>
     
