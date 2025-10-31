@@ -17,7 +17,7 @@ Ana yapılandırma dosyası `config.php` kök dizinde bulunmaktadır ve tüm sis
 Host: localhost
 Port: 3306
 Database: u2101458_gurbuz_oyuncak
-Username: gurbuz@gurbuzoyuncak.site
+Username: u2101458_gurbuzoyuncak
 Password: ?S3rhanK6l6y?
 ```
 
@@ -63,13 +63,13 @@ $conn = $database->getConnection();
 
 ```bash
 # Ana schema
-mysql -u gurbuz@gurbuzoyuncak.site -p u2101458_gurbuz_oyuncak < database/schema.sql
+mysql -u u2101458_gurbuzoyuncak -p u2101458_gurbuz_oyuncak < database/schema.sql
 
 # Ek özellikler (kampanya, kupon, ödül sistemi)
-mysql -u gurbuz@gurbuzoyuncak.site -p u2101458_gurbuz_oyuncak < database/extensions_schema.sql
+mysql -u u2101458_gurbuzoyuncak -p u2101458_gurbuz_oyuncak < database/extensions_schema.sql
 
 # Demo veriler (opsiyonel)
-mysql -u gurbuz@gurbuzoyuncak.site -p u2101458_gurbuz_oyuncak < database/demo_data.sql
+mysql -u u2101458_gurbuzoyuncak -p u2101458_gurbuz_oyuncak < database/demo_data.sql
 ```
 
 ## 🔒 Güvenlik Ayarları
@@ -158,13 +158,13 @@ try {
 **Çözüm 1:** Kullanıcı adı ve şifreyi kontrol edin
 ```php
 // config.php
-define('DB_USER', 'gurbuz@gurbuzoyuncak.site');
+define('DB_USER', 'u2101458_gurbuzoyuncak');
 define('DB_PASS', '?S3rhanK6l6y?');
 ```
 
 **Çözüm 2:** MySQL kullanıcı izinlerini kontrol edin
 ```sql
-SHOW GRANTS FOR 'gurbuz@gurbuzoyuncak.site'@'localhost';
+SHOW GRANTS FOR 'u2101458_gurbuzoyuncak'@'localhost';
 ```
 
 ### Bağlantı Hatası: "Unknown database"

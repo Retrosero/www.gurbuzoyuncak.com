@@ -2,14 +2,11 @@
 /**
  * Ana Yapılandırma Dosyası
  * Gürbüz Oyuncak E-Ticaret Sistemi
- * 
- * Bu dosya tüm sistem genelinde kullanılacak yapılandırma ayarlarını içerir.
- * Güvenlik nedeniyle bu dosya .gitignore'a eklenmelidir.
  */
 
 // Hata raporlama ayarları
 error_reporting(E_ALL);
-ini_set('display_errors', 1); // Geliştirme sırasında 1, canlı sunucuda 0 olmalı
+ini_set('display_errors', 1);
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/logs/php-errors.log');
 
@@ -20,7 +17,7 @@ date_default_timezone_set('Europe/Istanbul');
 define('DB_HOST', 'localhost');
 define('DB_PORT', '3306');
 define('DB_NAME', 'u2101458_gurbuz_oyuncak');
-define('DB_USER', 'gurbuz@gurbuzoyuncak.site');
+define('DB_USER', 'u2101458_gurbuzoyuncak');
 define('DB_PASS', '?S3rhanK6l6y?');
 define('DB_CHARSET', 'utf8mb4');
 
@@ -45,42 +42,24 @@ define('ASSETS_URL', BASE_URL . '/assets');
 define('UPLOADS_URL', BASE_URL . '/uploads');
 
 // Güvenlik Yapılandırması
-define('SESSION_LIFETIME', 1800); // 30 dakika
+define('SESSION_LIFETIME', 1800);
 define('CSRF_TOKEN_NAME', 'csrf_token');
 define('PASSWORD_MIN_LENGTH', 8);
 define('MAX_LOGIN_ATTEMPTS', 5);
-define('LOGIN_TIMEOUT', 900); // 15 dakika
+define('LOGIN_TIMEOUT', 900);
 
 // Dosya Yükleme Yapılandırması
-define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
+define('MAX_FILE_SIZE', 5 * 1024 * 1024);
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 define('ALLOWED_IMAGE_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
-
-// E-posta Yapılandırması
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'your-email@gmail.com');
-define('SMTP_PASSWORD', 'your-app-password');
-define('SMTP_FROM_EMAIL', SITE_EMAIL);
-define('SMTP_FROM_NAME', SITE_NAME);
 
 // Ödeme Yapılandırması
 define('PAYMENT_CURRENCY', 'TRY');
 define('PAYMENT_LOCALE', 'tr');
 
-// İyzico Yapılandırması
-define('IYZICO_API_KEY', 'your-iyzico-api-key');
-define('IYZICO_SECRET_KEY', 'your-iyzico-secret-key');
-define('IYZICO_BASE_URL', 'https://sandbox-api.iyzipay.com'); // Canlı: https://api.iyzipay.com
-
-// PayTR Yapılandırması
-define('PAYTR_MERCHANT_ID', 'your-merchant-id');
-define('PAYTR_MERCHANT_KEY', 'your-merchant-key');
-define('PAYTR_MERCHANT_SALT', 'your-merchant-salt');
-
 // Cache Yapılandırması
 define('CACHE_ENABLED', true);
-define('CACHE_LIFETIME', 3600); // 1 saat
+define('CACHE_LIFETIME', 3600);
 
 // Sayfalama Yapılandırması
 define('ITEMS_PER_PAGE', 20);
@@ -95,49 +74,33 @@ define('MAX_DISCOUNT_PERCENTAGE', 90);
 define('MIN_CART_AMOUNT', 0);
 
 // Puan Sistemi Yapılandırması
-define('POINTS_PER_TRY', 1); // Her 1 TL'ye 1 puan
-define('POINTS_EXPIRY_DAYS', 365); // Puanlar 1 yıl sonra sona erer
-define('POINTS_TO_TRY_RATIO', 0.01); // 1 puan = 0.01 TL
-
-// VIP Seviyeleri
-define('VIP_BRONZE_MIN', 101);
-define('VIP_SILVER_MIN', 501);
-define('VIP_GOLD_MIN', 1001);
-define('VIP_PLATINUM_MIN', 2001);
+define('POINTS_PER_TRY', 1);
+define('POINTS_EXPIRY_DAYS', 365);
+define('POINTS_TO_TRY_RATIO', 0.01);
 
 // Kargo Yapılandırması
-define('FREE_SHIPPING_THRESHOLD', 150); // 150 TL üzeri ücretsiz kargo
+define('FREE_SHIPPING_THRESHOLD', 150);
 define('DEFAULT_SHIPPING_COST', 29.90);
 
-// API Yapılandırması
-define('API_VERSION', 'v1');
-define('API_RATE_LIMIT', 100); // Dakikada maksimum istek sayısı
-
-// Loglama Yapılandırması
-define('LOG_LEVEL', 'INFO'); // DEBUG, INFO, WARNING, ERROR, CRITICAL
-define('LOG_TO_FILE', true);
-define('LOG_TO_DATABASE', false);
+// Geliştirme Modu
+define('DEV_MODE', true);
+define('DEBUG_MODE', true);
 
 // Bakım Modu
 define('MAINTENANCE_MODE', false);
 define('MAINTENANCE_MESSAGE', 'Sitemiz şu anda bakımdadır. Lütfen daha sonra tekrar deneyiniz.');
 
-// Geliştirme Modu
-define('DEV_MODE', true); // Geliştirme sırasında true, canlı sunucuda false olmalı
-define('DEBUG_MODE', true); // Geliştirme sırasında true, canlı sunucuda false olmalı
-
 // Session Yapılandırması
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
-    ini_set('session.cookie_secure', 1); // HTTPS kullanıyorsanız
+    ini_set('session.cookie_secure', 0); // Localhost için 0
     ini_set('session.cookie_samesite', 'Strict');
     session_start();
 }
 
 /**
  * Veritabanı bağlantısı oluştur
- * @return PDO
  */
 function getDbConnection() {
     static $conn = null;
@@ -174,32 +137,6 @@ function getDbConnection() {
 }
 
 /**
- * Ortam değişkenlerini yükle (.env dosyası varsa)
- */
-function loadEnv() {
-    $envFile = ROOT_PATH . '/.env';
-    if (file_exists($envFile)) {
-        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        foreach ($lines as $line) {
-            if (strpos(trim($line), '#') === 0) {
-                continue;
-            }
-            list($name, $value) = explode('=', $line, 2);
-            $name = trim($name);
-            $value = trim($value);
-            if (!array_key_exists($name, $_ENV)) {
-                putenv(sprintf('%s=%s', $name, $value));
-                $_ENV[$name] = $value;
-                $_SERVER[$name] = $value;
-            }
-        }
-    }
-}
-
-// .env dosyasını yükle
-loadEnv();
-
-/**
  * Güvenli çıktı için helper fonksiyon
  */
 function e($string) {
@@ -211,20 +148,6 @@ function e($string) {
  */
 function url($path = '') {
     return BASE_URL . '/' . ltrim($path, '/');
-}
-
-/**
- * Asset URL oluştur
- */
-function asset($path = '') {
-    return ASSETS_URL . '/' . ltrim($path, '/');
-}
-
-/**
- * Upload URL oluştur
- */
-function uploadUrl($path = '') {
-    return UPLOADS_URL . '/' . ltrim($path, '/');
 }
 
 /**
@@ -246,17 +169,6 @@ function jsonResponse($data, $statusCode = 200) {
 }
 
 /**
- * Hata logla
- */
-function logError($message, $context = []) {
-    $logMessage = date('Y-m-d H:i:s') . ' - ' . $message;
-    if (!empty($context)) {
-        $logMessage .= ' - Context: ' . json_encode($context);
-    }
-    error_log($logMessage . PHP_EOL, 3, LOG_PATH . '/app-errors.log');
-}
-
-/**
  * Bakım modu kontrolü
  */
 function checkMaintenanceMode() {
@@ -266,5 +178,4 @@ function checkMaintenanceMode() {
     }
 }
 
-// Bakım modu kontrolü yap
 checkMaintenanceMode();
