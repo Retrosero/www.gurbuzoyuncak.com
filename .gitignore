@@ -1,0 +1,76 @@
+# Gürbüz Oyuncak - Git Ignore
+
+# Ortam Değişkenleri
+.env
+config.local.php
+
+# Veritabanı Yedekleri
+*.sql
+*.sql.gz
+database/backups/
+
+# Log Dosyaları
+logs/
+*.log
+
+# Yüklenen Dosyalar
+uploads/
+!uploads/.gitkeep
+
+# Cache Dosyaları
+cache/
+*.cache
+
+# Geçici Dosyalar
+tmp/
+temp/
+*.tmp
+
+# IDE ve Editor Dosyaları
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Composer
+vendor/
+composer.lock
+
+# Node Modules
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build Dosyaları
+dist/
+build/
+
+# Sistem Dosyaları
+.htaccess.backup
+php_errors.log
+error_log
+
+# Güvenlik
+*.pem
+*.key
+*.crt
+ssl/
+
+# Backup Dosyaları
+*.bak
+*.backup
+*~
+
+# Test Dosyaları
+phpunit.xml
+.phpunit.result.cache
+tests/_output/
+
+# Session Dosyaları
+sessions/
+
+# Ödeme Gateway Test Dosyaları
+payment-test/

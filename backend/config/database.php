@@ -4,16 +4,31 @@
  * Gürbüz Oyuncak E-Ticaret Sistemi
  */
 
+// Ana config dosyasını yükle
+require_once __DIR__ . '/../../config.php';
+
 class Database {
-    // Veritabanı bağlantı bilgileri
-    private $host = "localhost";
-    private $port = "3306";
-    private $db_name = "u2101458_gurbuz_oyuncak";
-    private $username = "gurbuz@gurbuzoyuncak.site";
-    private $password = "?S3rhanK6l6y?";
-    private $charset = "utf8mb4";
+    // Veritabanı bağlantı bilgileri (config.php'den alınıyor)
+    private $host;
+    private $port;
+    private $db_name;
+    private $username;
+    private $password;
+    private $charset;
     
     public $conn;
+    
+    /**
+     * Constructor - Config değerlerini yükle
+     */
+    public function __construct() {
+        $this->host = DB_HOST;
+        $this->port = DB_PORT;
+        $this->db_name = DB_NAME;
+        $this->username = DB_USER;
+        $this->password = DB_PASS;
+        $this->charset = DB_CHARSET;
+    }
     
     /**
      * Veritabanı bağlantısı oluştur
@@ -27,13 +42,30 @@ class Database {
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . $this->charset
             ];
             
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            
+            if (DEV_MODE) {
+                error_log("Database connection successful");
+            }
         } catch(PDOException $exception) {
-            echo "Bağlantı hatası: " . $exception->getMessage();
+            if (DEV_MODE || DEBUG_MODE) {
+                die("Bağlantı hatası: " . $exception->getMessage());
+            } else {
+                error_log("Database connection error: " . $exception->getMessage());
+                die("Veritabanı bağlantı hatası oluştu. Lütfen daha sonra tekrar deneyiniz.");
+            }
         }
         
         return $this->conn;
+    }
+    
+    /**
+     * Bağlantıyı kapat
+     */
+    public function closeConnection() {
+        $this->conn = null;
     }
 }
