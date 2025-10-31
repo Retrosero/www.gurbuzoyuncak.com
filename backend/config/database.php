@@ -51,10 +51,25 @@ class Database {
                 error_log("Database connection successful");
             }
         } catch(PDOException $exception) {
-            if (DEV_MODE || DEBUG_MODE) {
+            // Log the error
+            error_log("Database connection error: " . $exception->getMessage());
+            
+            // Return JSON error for API calls
+            if (php_sapi_name() !== 'cli' && strpos($_SERVER['REQUEST_URI'], '/api/') !== false) {
+                header('Content-Type: application/json; charset=UTF-8');
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Veritabanı bağlantı hatası',
+                    'error' => (defined('DEV_MODE') && DEV_MODE) ? $exception->getMessage() : null
+                ]);
+                exit;
+            }
+            
+            // For non-API calls
+            if (defined('DEV_MODE') && DEV_MODE) {
                 die("Bağlantı hatası: " . $exception->getMessage());
             } else {
-                error_log("Database connection error: " . $exception->getMessage());
                 die("Veritabanı bağlantı hatası oluştu. Lütfen daha sonra tekrar deneyiniz.");
             }
         }

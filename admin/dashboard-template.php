@@ -12,7 +12,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/admin/css/admin.css">
-    <link rel="stylesheet" href="/components/css/components.css">
+    <link rel="stylesheet" href="../components/css/components.css">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -217,7 +217,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <!-- Component Loader -->
-    <script src="/components/js/component-loader.js"></script>
+    <script src="../components/js/component-loader.js"></script>
     
     <!-- Admin Dashboard JS -->
     <script>

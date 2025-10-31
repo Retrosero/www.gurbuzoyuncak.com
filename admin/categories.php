@@ -31,7 +31,7 @@ if (!isAdminLoggedIn()) {
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/admin/css/style.css">
-    <link rel="stylesheet" href="/components/css/components.css">
+    <link rel="stylesheet" href="../components/css/components.css">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -198,7 +198,7 @@ if (!isAdminLoggedIn()) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Component Loader -->
-    <script src="/components/js/component-loader.js"></script>
+    <script src="../components/js/component-loader.js"></script>
     
     <script>
         // Sayfa yüklendiğinde

@@ -25,7 +25,7 @@ if (!isAdminLoggedIn()) {
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Component CSS -->
-    <link rel="stylesheet" href="/components/css/components.css">
+    <link rel="stylesheet" href="../components/css/components.css">
     
     <style>
         :root {
@@ -1272,7 +1272,7 @@ if (!isAdminLoggedIn()) {
     <!-- jQuery for DateRangePicker -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Component Loader -->
-    <script src="/components/js/component-loader.js"></script>
+    <script src="../components/js/component-loader.js"></script>
     
     <script>
         // Reports Manager Class

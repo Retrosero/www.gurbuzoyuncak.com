@@ -16,7 +16,7 @@ if (!isAdminLoggedIn()) {
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="/components/css/components.css">
+    <link rel="stylesheet" href="../components/css/components.css">
     
     <style>
         :root {
@@ -211,7 +211,7 @@ if (!isAdminLoggedIn()) {
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/components/js/component-loader.js"></script>
+    <script src="../components/js/component-loader.js"></script>
     
     <script>
         lucide.createIcons();

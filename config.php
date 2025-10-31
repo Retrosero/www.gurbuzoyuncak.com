@@ -9,7 +9,7 @@
 
 // Hata raporlama ayarları
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Canlı sunucuda 0 olmalı
+ini_set('display_errors', 1); // Geliştirme sırasında 1, canlı sunucuda 0 olmalı
 ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/logs/php-errors.log');
 
@@ -123,8 +123,8 @@ define('MAINTENANCE_MODE', false);
 define('MAINTENANCE_MESSAGE', 'Sitemiz şu anda bakımdadır. Lütfen daha sonra tekrar deneyiniz.');
 
 // Geliştirme Modu
-define('DEV_MODE', false); // Canlı sunucuda false olmalı
-define('DEBUG_MODE', false); // Canlı sunucuda false olmalı
+define('DEV_MODE', true); // Geliştirme sırasında true, canlı sunucuda false olmalı
+define('DEBUG_MODE', true); // Geliştirme sırasında true, canlı sunucuda false olmalı
 
 // Session Yapılandırması
 if (session_status() === PHP_SESSION_NONE) {
