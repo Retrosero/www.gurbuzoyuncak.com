@@ -1,0 +1,591 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142 76% 36%;
+    --radius: 0.75rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142 76% 36%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%
+  }
+
+  /* Mobile UX Optimizations */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection for specific elements */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Better scroll behavior */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Touch-friendly minimum tap area */
+  button, [role="button"], .touch-manipulation {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Prevent zoom on input focus for mobile */
+  input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea {
+    font-size: 16px;
+  }
+
+  /* Smooth scrolling for mobile */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Improve button animations on mobile */
+  button, .btn {
+    will-change: transform;
+    transition: all 0.2s ease;
+  }
+
+  /* Better image rendering */
+  img {
+    object-position: top;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  /* Mobile-optimized shadows */
+  .shadow-mobile {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Prevent horizontal scroll */
+  .prevent-horizontal-scroll {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+}
+
+.fixed {
+  position: fixed;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 768px) {
+  .mobile-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .mobile-text-sm {
+    font-size: 0.875rem;
+  }
+
+  .mobile-text-base {
+    font-size: 1rem;
+  }
+
+  .mobile-text-lg {
+    font-size: 1.125rem;
+  }
+
+  .mobile-text-xl {
+    font-size: 1.25rem;
+  }
+
+  .mobile-text-2xl {
+    font-size: 1.5rem;
+  }
+
+  .mobile-text-3xl {
+    font-size: 1.875rem;
+  }
+
+  .mobile-text-4xl {
+    font-size: 2.25rem;
+  }
+
+  .mobile-text-5xl {
+    font-size: 2.5rem;
+  }
+
+  .mobile-gap-2 {
+    gap: 0.5rem;
+  }
+
+  .mobile-gap-3 {
+    gap: 0.75rem;
+  }
+
+  .mobile-gap-4 {
+    gap: 1rem;
+  }
+
+  /* Ensure proper mobile spacing */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Optimize heading sizes for mobile */
+  h1 {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+    line-height: 1.3 !important;
+  }
+
+  h3 {
+    font-size: 1.25rem !important;
+    line-height: 1.4 !important;
+  }
+
+  h4 {
+    font-size: 1.125rem !important;
+    line-height: 1.4 !important;
+  }
+
+  h5 {
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+  }
+
+  h6 {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Optimize paragraph text */
+  p {
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Button sizing improvements */
+  .btn, button {
+    min-height: 48px;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.75rem !important;
+    transition: all 0.2s ease-out !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Enhanced button hover effects */
+  .btn:hover:not(:disabled), button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(40, 51, 98, 0.15) !important;
+  }
+
+  /* Input improvements */
+  input, textarea, select {
+    font-size: 16px !important; /* Prevent zoom */
+    min-height: 48px;
+    padding: 0.75rem;
+    border-radius: 0.75rem !important;
+    transition: all 0.3s ease-in-out !important;
+  }
+
+  /* Card spacing optimization */
+  .card {
+    padding: 1rem;
+  }
+
+  /* Navigation improvements */
+  nav a, nav button {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  /* Grid gap improvements */
+  .grid {
+    gap: 1rem;
+  }
+
+  /* Flex gap improvements */
+  .flex {
+    gap: 0.75rem;
+  }
+}
+
+/* Extra small screens (phones) */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+
+  h2 {
+    font-size: 1.375rem !important;
+  }
+
+  h3 {
+    font-size: 1.125rem !important;
+  }
+
+  p {
+    font-size: 0.8125rem !important;
+  }
+
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Tighter spacing for very small screens */
+  .grid {
+    gap: 0.75rem;
+  }
+
+  .flex {
+    gap: 0.5rem;
+  }
+}
+
+/* Yumuşak Tasarım Global Stilleri */
+
+/* Tüm butonlara yumuşak geçişler */
+button, .btn, [role="button"] {
+  transition: all 0.2s ease-out !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, box-shadow;
+}
+
+/* Form elemanlarına yumuşak geçişler */
+input:not([type="checkbox"]):not([type="radio"]), 
+textarea, select {
+  transition: all 0.2s ease-out !important;
+}
+
+/* Form elemanlarına hover gölgeleri */
+input:not([type="checkbox"]):not([type="radio"]):hover, 
+textarea:hover, select:hover {
+  box-shadow: 0 4px 20px rgba(40, 51, 98, 0.12) !important;
+  transform: translateY(-1px);
+}
+
+/* Form elemanlarına focus gölgeleri */
+input:not([type="checkbox"]):not([type="radio"]):focus, 
+textarea:focus, select:focus {
+  box-shadow: 0 0 0 3px rgba(42, 127, 252, 0.15), 0 4px 20px rgba(40, 51, 98, 0.12) !important;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+/* Butonlara aktif boyut efekti */
+button:active:not(:disabled), .btn:active:not(:disabled), [role="button"]:active:not(:disabled) {
+  transform: scale(0.97) translateY(0) !important;
+  transition: all 0.1s ease-out !important;
+}
+
+/* Buton hover efektleri */
+.btn:hover:not(:disabled), button:hover:not(:disabled), [role="button"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 51, 98, 0.15) !important;
+}
+
+/* Icon butonları için özel stiller */
+button[type="button"].icon-button,
+.btn.icon-button,
+[role="button"].icon-button {
+  transition: all 0.2s ease-out !important;
+  transform: translateZ(0);
+}
+
+button[type="button"].icon-button:hover:not(:disabled),
+.btn.icon-button:hover:not(:disabled),
+[role="button"].icon-button:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 15px rgba(40, 51, 98, 0.2) !important;
+}
+
+/* Primary button özel stilleri */
+.btn-primary, 
+button.btn-primary,
+[role="button"].btn-primary {
+  background: linear-gradient(135deg, #0cc0df 0%, #00a8cb 100%);
+  transition: all 0.2s ease-out !important;
+}
+
+.btn-primary:hover:not(:disabled),
+button.btn-primary:hover:not(:disabled),
+[role="button"].btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #00a8cb 0%, #00a8cb 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(40, 51, 98, 0.25) !important;
+}
+
+/* Secondary button özel stilleri */
+.btn-secondary,
+button.btn-secondary,
+[role="button"].btn-secondary {
+  background: linear-gradient(135deg, #00a8cb 0%, #00a8cb 100%);
+  transition: all 0.2s ease-out !important;
+}
+
+.btn-secondary:hover:not(:disabled),
+button.btn-secondary:hover:not(:disabled),
+[role="button"].btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4a5a9e 0%, #5a6ab8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(58, 71, 133, 0.25) !important;
+}
+
+/* Destructive button özel stilleri */
+.btn-destructive,
+button.btn-destructive,
+[role="button"].btn-destructive {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  transition: all 0.2s ease-out !important;
+}
+
+.btn-destructive:hover:not(:disabled),
+button.btn-destructive:hover:not(:disabled),
+[role="button"].btn-destructive:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.25) !important;
+}
+
+/* Ghost button özel stilleri */
+.btn-ghost,
+button.btn-ghost,
+[role="button"].btn-ghost {
+  transition: all 0.2s ease-out !important;
+}
+
+.btn-ghost:hover:not(:disabled),
+button.btn-ghost:hover:not(:disabled),
+[role="button"].btn-ghost:hover:not(:disabled) {
+  background: rgba(40, 51, 98, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(40, 51, 98, 0.1) !important;
+}
+
+/* Kartlara yumuşak gölgeler */
+.card, [class*="bg-white"] {
+  transition: all 0.3s ease-in-out !important;
+}
+
+/* Linklere yumuşak geçişler */
+a {
+  transition: all 0.3s ease-in-out !important;
+}
+
+/* Modern Scroll Bar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.dark ::-webkit-scrollbar-corner {
+  background: #1e293b;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.dark * {
+  scrollbar-color: #475569 #1e293b;
+}
+
+/* Scroll snap for horizontal containers */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+
+/* Hide scrollbar but maintain scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Custom thin scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #93c5fd;
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa;
+}
+
+/* Sonner Toast Özelleştirmeleri - Admin Mesaj Renkleri */
+[data-sonner-toast][data-type="success"] {
+  background-color: #ffde59 !important;
+  color: #000 !important;
+  border: 1px solid #ffde59 !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background-color: #ef4444 !important;
+  color: #fff !important;
+  border: 1px solid #ef4444 !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  background-color: #ff66c4 !important;
+  color: #fff !important;
+  border: 1px solid #ff66c4 !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  background-color: #3b82f6 !important;
+  color: #fff !important;
+  border: 1px solid #3b82f6 !important;
+}
+
+/* Sonner toast actions için */
+[data-sonner-toast][data-type="success"] button {
+  color: #000 !important;
+}
+
+[data-sonner-toast][data-type="warning"] button {
+  color: #fff !important;
+}

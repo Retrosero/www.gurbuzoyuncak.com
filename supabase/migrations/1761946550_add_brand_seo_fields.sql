@@ -1,0 +1,9 @@
+-- Migration: add_brand_seo_fields
+-- Created at: 1761946550
+
+ALTER TABLE brands 
+ADD COLUMN IF NOT EXISTS description TEXT,
+ADD COLUMN IF NOT EXISTS meta_title TEXT,
+ADD COLUMN IF NOT EXISTS meta_description TEXT,
+ADD COLUMN IF NOT EXISTS meta_keywords TEXT,
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();;

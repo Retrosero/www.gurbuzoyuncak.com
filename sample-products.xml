@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Products>
+    <Product>
+        <Product_code>TEST001</Product_code>
+        <Product_id>TEST001</Product_id>
+        <Barcode>1234567890123</Barcode>
+        <mpn>MPN001</mpn>
+        <rafno>RAF001</rafno>
+        <alt_baslik2>Test Ürünü Varyant</alt_baslik2>
+        <Name>Test Oyuncak</Name>
+        <mainCategory>Oyuncaklar</mainCategory>
+        <mainCategory_id>1</mainCategory_id>
+        <category>Elektronik Oyuncaklar</category>
+        <category_id>2</category_id>
+        <subCategory>RC Oyuncaklar</subCategory>
+        <subCategory_id>3</subCategory_id>
+        <Price>99.99</Price>
+        <Tax>20</Tax>
+        <Stock>50</Stock>
+        <Brand>TestMarka</Brand>
+        <urun_mensei>Türkiye</urun_mensei>
+        <Image1>https://example.com/image1.jpg</Image1>
+        <Image2>https://example.com/image2.jpg</Image2>
+        <Image3>https://example.com/image3.jpg</Image3>
+        <Image4>https://example.com/image4.jpg</Image4>
+        <width>20</width>
+        <height>15</height>
+        <depth>10</depth>
+        <desi>3</desi>
+        <agirlik>500</agirlik>
+    </Product>
+    <Product>
+        <Product_code>TEST002</Product_code>
+        <Barcode>1234567890124</Barcode>
+        <Name>Başka Test Oyuncağı</Name>
+        <Price>49.99</Price>
+        <Tax>20</Tax>
+        <Stock>25</Stock>
+        <Brand>TestMarka</Brand>
+        <urun_mensei>Çin</urun_mensei>
+        <Image1>https://example.com/image5.jpg</Image1>
+    </Product>
+</Products>
